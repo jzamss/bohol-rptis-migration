@@ -62,6 +62,13 @@ and municipal_code = @municipalcode
 ;
 
 
+update rptis_talibon.m_assessment_levels a, rptis_talibon.m_classification c set 
+  a.objid = concat('MRA:',@municipalcode,':', @revisionyear, ':', a.class_code) 
+where a.class_code = c.class_code
+and a.prop_type_code = 'M'
+and municipal_code = @municipalcode
+;
+
 
 insert ignore into training_etracs255.rysetting_lgu(
   objid,
