@@ -58,7 +58,7 @@ select
   c.class_code as code,
   c.class_desc as name,
   case when a.value_from is null then 1 else 0 end as fixrate,
-  a.assessment_level as rate,
+  a.assessment_level * 100 as rate,
   null as previd
 from rptis.m_assessment_levels a, rptis.m_classification c 
 where a.class_code = c.class_code

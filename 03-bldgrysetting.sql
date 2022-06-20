@@ -75,7 +75,7 @@ select
   concat('BR:',@municipalcode,':', @revisionyear) as landrysettingid,
   a.value_from as mvfrom,
   a.value_to as mvto,
-  a.assessment_level as rate
+  a.assessment_level * 100 as rate
 from rptis.m_assessment_levels a, rptis.m_classification c 
 where a.class_code = c.class_code
 and a.prop_type_code = 'B'
@@ -335,6 +335,4 @@ select
   (select name from training_etracs255.municipality) as lguname
 from training_etracs255.bldgrysetting
 ;
-
-
 
