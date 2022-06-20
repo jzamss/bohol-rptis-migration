@@ -145,3 +145,74 @@ set
 	v.spcid = concat('LRSPC:',@municipalcode,':', @revisionyear, ':', c.class_code)
 where c.class_code = v.class_code
 ;
+
+
+delete from training_etracs255.landadjustmenttype
+;
+
+insert ignore into training_etracs255.landadjustmenttype(
+  objid,
+  landrysettingid,
+  code,
+  name,
+  expr,
+  appliedto,
+  previd,
+  idx
+)
+select  distinct 
+  concat('LRAT:',@municipalcode,':', @revisionyear, ':', f.adjustment_desc) as objid,
+  concat('LR:',@municipalcode,':', @revisionyear) as landrysettingid,
+  substr(f.adjustment_desc, 1, 5) as code,
+  f.adjustment_desc as name,
+	case 
+		when f.value_adj is null then 0 
+		else concat('SYS_BASE_MARKET_VALUE * ', f.value_adj) 
+	end as expr,
+  null as appliedto,
+  null as previd,
+  0 as idx
+from rptis_talibon.m_adjustment_factor f, 
+	rptis_talibon.m_adjustment_type a,
+	rptis_talibon.m_classification c, 
+	rptis_talibon.m_prop_classification p
+where f.adj_type_code = a.adj_type_code
+and f.class_code = c.class_code
+and c.class_group = p.prop_class_code
+and f.adj_type_code <> 55
+;
+
+update rptis_talibon.m_adjustment_factor f, 
+	rptis_talibon.m_adjustment_type a,
+	rptis_talibon.m_classification c, 
+	rptis_talibon.m_prop_classification p
+set 
+  f.objid = concat('LRAT:',@municipalcode,':', @revisionyear, ':', f.adjustment_desc)
+where f.adj_type_code = a.adj_type_code
+and f.class_code = c.class_code
+and c.class_group = p.prop_class_code
+and f.adj_type_code <> 55
+;
+
+
+
+insert ignore into training_etracs255.rysetting_lgu(
+  objid,
+  rysettingid,
+  lguid,
+  settingtype,
+  barangayid,
+  lguname
+)
+select  
+  objid,
+  objid as rysettingid,
+  (select objid from municipality) as lguid,
+  'land' as settingtype,
+  null as barangayid,
+  (select name from municipality) as lguname
+from training_etracs255.landrysetting
+;
+
+
+
