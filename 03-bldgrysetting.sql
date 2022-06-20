@@ -12,7 +12,7 @@ set @revisionyear = 2016;
 set @municipalcode = 42;
 
 
-insert ignore into training_etracs255.landrysetting(
+insert ignore into training_etracs255.bldgrysetting(
   objid,
   state,
   ry,
@@ -23,7 +23,7 @@ insert ignore into training_etracs255.landrysetting(
   ordinancedate
 )
 select
-  concat('LR:',municipal_code,':', @revisionyear) as objid,
+  concat('BR:',municipal_code,':', @revisionyear) as objid,
   'APPROVED' as state,
   @revisionyear as ry,
   m.municipal_desc as appliedto,
@@ -36,14 +36,9 @@ where m.municipal_code = @municipalcode
 ;
 
 
-
-update rptis.m_assessment_levels set municipal_code = @municipalcode
-;
-
-
-insert ignore into training_etracs255.landassesslevel(
+insert ignore into training_etracs255.bldgassesslevel(
   objid,
-  landrysettingid,
+  bldgrysettingid,
   classification_objid,
   code,
   name,
@@ -51,149 +46,276 @@ insert ignore into training_etracs255.landassesslevel(
   rate,
   previd
 )
-select
-  concat('LRA:',@municipalcode,':', @revisionyear, line_no) as objid,
-  concat('LR:',@municipalcode,':', @revisionyear) as landrysettingid,
+select distinct 
+  concat('BRA:',@municipalcode,':', @revisionyear, ':', a.class_code) as objid,
+  concat('BR:',@municipalcode,':', @revisionyear) as landrysettingid,
   c.class_group as classification_objid,
   c.class_code as code,
   c.class_desc as name,
-  case when a.value_from is null then 1 else 0 end as fixrate,
-  a.assessment_level as rate,
+  0 as fixrate,
+  0 as rate,
   null as previd
 from rptis.m_assessment_levels a, rptis.m_classification c 
 where a.class_code = c.class_code
-and a.prop_type_code = 'L'
+and a.prop_type_code = 'B'
 and municipal_code = @municipalcode
 ;
 
-alter table rptis.m_assessment_levels 
-	add objid varchar(50)
+insert ignore into training_etracs255.bldgassesslevelrange(
+  objid,
+  bldgassesslevelid,
+  bldgrysettingid,
+  mvfrom,
+  mvto,
+  rate
+)
+select 
+  concat('BRAR:',@municipalcode,':', @revisionyear, ':', a.class_code, ':', line_no) as objid,
+	concat('BRA:',@municipalcode,':', @revisionyear, ':', a.class_code) as objid,
+  concat('BR:',@municipalcode,':', @revisionyear) as landrysettingid,
+  a.value_from as mvfrom,
+  a.value_to as mvto,
+  a.assessment_level as rate
+from rptis.m_assessment_levels a, rptis.m_classification c 
+where a.class_code = c.class_code
+and a.prop_type_code = 'B'
+and municipal_code = @municipalcode
 ;
 
 update 
 	rptis.m_assessment_levels a, 
-	rptis.m_classification c
+	rptis.m_classification c 
 set 
-  a.objid = concat('LRA:',@municipalcode,':', @revisionyear, line_no)
+  a.objid = concat('BRAR:',@municipalcode,':', @revisionyear, ':', a.class_code, ':', line_no)
 where a.class_code = c.class_code
-and a.prop_type_code = 'L'
+and a.prop_type_code = 'B'
 and municipal_code = @municipalcode
 ;
 
-
-
-insert ignore into training_etracs255.lcuvspecificclass(
+insert ignore into training_etracs255.bldgtype(
   objid,
-  landrysettingid,
-  classification_objid,
-  areatype,
+  bldgrysettingid,
+  code,
+  name,
+  basevaluetype,
+  residualrate,
   previd,
-  landspecificclass_objid
+  usecdu,
+  storeyadjtype
 )
-select
-  concat('LRSPC:',@municipalcode,':', @revisionyear, ':', class_code) as objid,
-  concat('LR:',@municipalcode,':', @revisionyear) as landrysettingid,
-  class_group as classification_objid,
-  case when class_group = 'A' then 'HA' else 'SQM' end  areatype,
+select 
+	concat('BT:',@municipalcode,':', @revisionyear, ':', struc_type) as objid,
+  concat('BR:',@municipalcode,':', @revisionyear) as bldgrysettingid,
+  struc_type as code,
+  struc_desc as name,
+  'gap' as basevaluetype,
+  20 as residualrate,
   null as previd,
-  class_code as  landspecificclass_objid
-from rptis.m_classification
+  0 as usecdu,
+  'bykind' as storeyadjtype
+from rptis.m_building_structure_type
 ;
+  
 
 
-alter table rptis.m_classification 
+alter table rptis.m_building_structure_type
 	add objid varchar(50)
 ;
 
-update rptis.m_classification set 
-  objid = concat('LRSPC:',@municipalcode,':', @revisionyear, ':', class_code)
+
+update rptis.m_building_structure_type set 
+	objid = concat('BT:',@municipalcode,':', @revisionyear, ':', struc_type)
 ;
 
 
 
-insert ignore into training_etracs255.lcuvsubclass(
+insert ignore into training_etracs255.bldgkindbucc(
   objid,
-  specificclass_objid,
-  landrysettingid,
-  code,
-  name,
-  unitvalue,
+  bldgrysettingid,
+  bldgtypeid,
+  bldgkind_objid,
+  basevaluetype,
+  basevalue,
+  minbasevalue,
+  maxbasevalue,
+  gapvalue,
+  minarea,
+  maxarea,
+  bldgclass,
   previd
 )
-select
-  concat('LRSUB:',@municipalcode,':', @revisionyear, ':', c.sub_class_code, ':', v.class_level_code) as objid,
-	concat('LRSPC:',@municipalcode,':', @revisionyear, ':', c.class_code) as specificclass_objid,
-  concat('LR:',@municipalcode,':', @revisionyear) as landrysettingid,
-  concat(c.sub_class_code, substring(v.class_level_code, 1,1)) as code,
-  concat(v.class_level_code, ' CLASS') as name,
-  v.class_level_amt as unitvalue,
+select 
+  concat('BR:',@municipalcode,':', @revisionyear, ':', struc_type, ':', s.bldg_kind_code ) as objid,
+  concat('BR:',@municipalcode,':', @revisionyear) as bldgrysettingid,
+  concat('BT:',@municipalcode,':', @revisionyear, ':', struc_type) as bldgtypeid,
+  s.bldg_kind_code as bldgkind_objid,
+  'gap' as basevaluetype,
+  0 as basevalue,
+  s.min_amt as minbasevalue,
+  s.max_amt as maxbasevalue,
+  s.gap_amt as gapvalue,
+  s.min_area as minarea,
+  s.max_area as maxarea,
+  null as bldgclass,
   null as previd
-from rptis.m_classification c
-inner join rptis.m_unit_value v on c.class_code = v.class_code
+from rptis.m_building_structure_type st,
+	rptis.m_sched_bldg_cost s
+where st.struc_code = s.struc_code
+and year_from = @revisionyear
 ;
 
-alter table rptis.m_unit_value 
-	add objid varchar(50),
-	add spcid varchar(50)
+
+
+
+alter table rptis.m_sched_bldg_cost  
+	add objid varchar(50)
+;
+
+
+update 
+	rptis.m_building_structure_type st,
+	rptis.m_sched_bldg_cost s
+set 
+  s.objid = concat('BR:',@municipalcode,':', @revisionyear, ':', struc_type, ':', s.bldg_kind_code )
+where st.struc_code = s.struc_code
+and year_from = @revisionyear
+;
+
+
+
+insert ignore into training_etracs255.bldgtype_depreciation(
+  objid,
+  bldgtypeid,
+  bldgrysettingid,
+  agefrom,
+  ageto,
+  rate
+)
+select 
+  concat('BTD:',@municipalcode,':', @revisionyear, ':', struc_type, ':', d.unique_code ) as objid,
+  concat('BT:',@municipalcode,':', @revisionyear, ':', struc_type) as bldgtypeid,
+  concat('BR:',@municipalcode,':', @revisionyear) as bldgrysettingid,
+  d.stage_from as agefrom,
+  d.stage_to as ageto,
+  d.percent_depreciation as rate
+from rptis.m_building_structure_type st,
+	rptis.m_bldg_depreciation d
+where st.struc_code = d.struc_code
+;
+
+
+insert ignore into training_etracs255.bldgtype_storeyadjustment(
+  objid,
+  bldgrysettingid,
+  bldgtypeid,
+  floorno,
+  rate,
+  previd
+)
+select 
+  concat('BTSA:',@municipalcode,':', @revisionyear, ':', struc_type, ':', bldg_kind_code) as objid,
+  concat('BR:',@municipalcode,':', @revisionyear) as bldgrysettingid,
+  concat('BT:',@municipalcode,':', @revisionyear, ':', struc_type) as bldgtypeid,
+  2 as floorno,
+  a.percent_value as rate,
+  null as previd
+from rptis.m_building_structure_type st,
+	rptis.m_addtnl_every_floor_bldg a
+where st.struc_code = a.struc_code
+;
+
+
+
+alter table rptis.m_addtnl_every_floor_bldg
+	add objid varchar(50)
 ;
 
 update 
-	rptis.m_classification c,
-	rptis.m_unit_value v 
+	rptis.m_building_structure_type st,
+	rptis.m_addtnl_every_floor_bldg a
 set 
-  v.objid = concat('LRSUB:',@municipalcode,':', @revisionyear, ':', c.sub_class_code, ':', v.class_level_code),
-	v.spcid = concat('LRSPC:',@municipalcode,':', @revisionyear, ':', c.class_code)
-where c.class_code = v.class_code
+  a.objid = concat('BTSA:',@municipalcode,':', @revisionyear, ':', struc_type, ':', bldg_kind_code)
+where st.struc_code = a.struc_code
 ;
 
 
-delete from training_etracs255.landadjustmenttype
+
+delete from training_etracs255.bldgtype_storeyadjustment_bldgkind
 ;
 
-insert ignore into training_etracs255.landadjustmenttype(
+insert ignore into training_etracs255.bldgtype_storeyadjustment_bldgkind(
   objid,
-  landrysettingid,
+  bldgrysettingid,
+  parentid,
+  bldgtypeid,
+  floorno,
+  bldgkindid
+)
+select 
+  concat('BTSAB:',@municipalcode,':', @revisionyear, ':', struc_type, ':', a.bldg_kind_code, ':', bldg_class_code) as objid,
+  concat('BR:',@municipalcode,':', @revisionyear) as bldgrysettingid,
+  concat('BTSA:',@municipalcode,':', @revisionyear, ':', struc_type, ':', bldg_kind_code) as parentid,
+  concat('BT:',@municipalcode,':', @revisionyear, ':', struc_type) as bldgtypeid,
+  2 as floorno,
+  a.bldg_kind_code as bldgkindid
+from rptis.m_building_structure_type st,
+	rptis.m_addtnl_every_floor_bldg a
+where st.struc_code = a.struc_code
+;
+
+
+
+alter table rptis.m_addtnl_every_floor_bldg
+	add storeyadjkindid varchar(50)
+;
+
+update 
+	rptis.m_building_structure_type st,
+	rptis.m_addtnl_every_floor_bldg a
+set 
+  a.storeyadjkindid = concat('BTSAB:',@municipalcode,':', @revisionyear, ':', struc_type, ':', a.bldg_kind_code, ':', bldg_class_code)
+where st.struc_code = a.struc_code
+;
+
+insert ignore into training_etracs255.bldgadditionalitem(
+  objid,
+  bldgrysettingid,
   code,
   name,
+  unit,
   expr,
-  appliedto,
   previd,
+  type,
+  addareatobldgtotalarea,
   idx
 )
-select  distinct 
-  concat('LRAT:',@municipalcode,':', @revisionyear, ':', f.adjustment_desc) as objid,
-  concat('LR:',@municipalcode,':', @revisionyear) as landrysettingid,
-  substr(f.adjustment_desc, 1, 5) as code,
-  f.adjustment_desc as name,
-	case 
-		when f.value_adj is null then 0 
-		else concat('SYS_BASE_MARKET_VALUE * ', f.value_adj) 
+select 
+  concat('BR:',@municipalcode,':', @revisionyear,':', i.extra_desc) as objid,
+  concat('BR:',@municipalcode,':', @revisionyear) as bldgrysettingid,
+  i.extra_code as code,
+  i.extra_desc as name,
+  '' as unit,
+  case 
+		when i.buv_per_sqr_meter = 'B' then concat('SYS_BASE_VALUE * ', i.percent_amt_per_m2, ' * AREA_SQM')
+		else concat('AREA SQM * ', i.percent_amt_per_m2)
 	end as expr,
-  null as appliedto,
   null as previd,
-  0 as idx
-from rptis.m_adjustment_factor f, 
-	rptis.m_adjustment_type a,
-	rptis.m_classification c, 
-	rptis.m_prop_classification p
-where f.adj_type_code = a.adj_type_code
-and f.class_code = c.class_code
-and c.class_group = p.prop_class_code
-and f.adj_type_code <> 55
+  'additionalitem' as type,
+  0 as addareatobldgtotalarea,
+  1 as idx
+from rptis.m_building_extra_items i
+where i.year_from = @revisionyear
 ;
 
-update rptis.m_adjustment_factor f, 
-	rptis.m_adjustment_type a,
-	rptis.m_classification c, 
-	rptis.m_prop_classification p
-set 
-  f.objid = concat('LRAT:',@municipalcode,':', @revisionyear, ':', f.adjustment_desc)
-where f.adj_type_code = a.adj_type_code
-and f.class_code = c.class_code
-and c.class_group = p.prop_class_code
-and f.adj_type_code <> 55
+
+alter table rptis.m_building_extra_items 
+	add objid varchar(100)
 ;
 
+update rptis.m_building_extra_items i set 
+	i.objid = concat('BR:',@municipalcode,':', @revisionyear,':', i.extra_desc)
+where i.year_from = @revisionyear
+;
 
 
 insert ignore into training_etracs255.rysetting_lgu(
@@ -207,11 +329,11 @@ insert ignore into training_etracs255.rysetting_lgu(
 select  
   objid,
   objid as rysettingid,
-  (select objid from municipality) as lguid,
-  'land' as settingtype,
+  (select objid from training_etracs255.municipality) as lguid,
+  'bldg' as settingtype,
   null as barangayid,
-  (select name from municipality) as lguname
-from training_etracs255.landrysetting
+  (select name from training_etracs255.municipality) as lguname
+from training_etracs255.bldgrysetting
 ;
 
 
