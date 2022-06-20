@@ -207,10 +207,10 @@ insert ignore into training_etracs255.rysetting_lgu(
 select  
   objid,
   objid as rysettingid,
-  (select objid from municipality) as lguid,
+  (select objid from training_etracs255.municipality) as lguid,
   'land' as settingtype,
   null as barangayid,
-  (select name from municipality) as lguname
+  (select name from training_etracs255.municipality) as lguname
 from training_etracs255.landrysetting
 ;
 
