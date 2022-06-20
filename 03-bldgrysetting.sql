@@ -1,4 +1,4 @@
-/* LAND SMV */
+/* BLDG SMV */
 
 
 /*=================================================
@@ -23,7 +23,7 @@ insert ignore into training_etracs255.landrysetting(
   ordinancedate
 )
 select
-  concat('LR:',@municipalcode,':', @revisionyear) as objid,
+  concat('LR:',municipal_code,':', @revisionyear) as objid,
   'APPROVED' as state,
   @revisionyear as ry,
   m.municipal_desc as appliedto,
