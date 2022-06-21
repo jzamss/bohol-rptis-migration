@@ -65,7 +65,7 @@ root,
 txncode
 )
 select
-  concat('047', repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code ) as objid,
+  concat('047-', repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code ) as objid,
   municipal_desc as name,
   'MUNICIPALITY' as orgclass,
   '047' as parent_objid,
@@ -92,10 +92,10 @@ insert into sys_org (
   txncode
 )
 select
-  concat('047',municipal_code,repeat('0',4 - LENGTH(brgy_code)), brgy_code) as objid,
+  concat('047-',municipal_code,'-',repeat('0',4 - LENGTH(brgy_code)), brgy_code) as objid,
   brgy_desc as name,
   'BARANGAY' as orgclass,
-  concat('047',municipal_code) as parent_objid,
+  concat('047-',municipal_code) as parent_objid,
   'MUNICIPALITY' as parent_orgclass,
   concat('047-',municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code) as code,
   0 as root,
@@ -132,7 +132,7 @@ insert into municipality (
   parentid
 )
 select
-  concat('047', repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code ) as objid,
+  concat('047-', repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code ) as objid,
   'DRAFT' as state,
   concat(repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code ) as indexno,
   concat('047-',repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code) as pin,
@@ -153,7 +153,7 @@ insert into barangay (
   parentid
 )
 select 
-  concat('047',municipal_code,repeat('0',4 - LENGTH(brgy_code)), brgy_code),
+  concat('047-',municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code),
   'DRAFT' as state,
   concat(repeat('0',4 - LENGTH(brgy_code)), brgy_code) as indexno,
   concat('047-',municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code) as pin,
@@ -170,8 +170,8 @@ alter table rptis.m_barangay
 ;
 
 update rptis.m_barangay set 
-	lguid = concat('047', repeat('0', 2 - LENGTH(municipal_code)), municipal_code ),
-	brgyid = concat('047',municipal_code,repeat('0',4 - LENGTH(brgy_code)), brgy_code)
+	lguid = concat('047-', repeat('0', 2 - LENGTH(municipal_code)), municipal_code ),
+	brgyid = concat('047-',municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code)
 ;
 
 
