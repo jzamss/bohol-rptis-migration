@@ -1,3 +1,4 @@
+
 /* BLDG SMV */
 
 
@@ -10,6 +11,23 @@ IMPORTANT !!!
 
 set @revisionyear = 2016;
 set @municipalcode = 42;
+set @municlass = '1ST';
+
+
+delete from training_etracs255.rysetting_lgu 
+where lguid like concat('%', @municipalcode)
+and settingtype = 'bldg';
+
+delete from training_etracs255.bldgadditionalitem;
+delete from training_etracs255.bldgassesslevelrange;
+delete from training_etracs255.bldgassesslevel;
+delete from training_etracs255.bldgkindbucc;
+delete from training_etracs255.bldgtype_depreciation;
+delete from training_etracs255.bldgtype_storeyadjustment_bldgkind;
+delete from training_etracs255.bldgtype_storeyadjustment;
+delete from training_etracs255.bldgtype;
+delete from training_etracs255.bldgrysetting;
+
 
 
 insert ignore into training_etracs255.bldgrysetting(
@@ -23,7 +41,7 @@ insert ignore into training_etracs255.bldgrysetting(
   ordinancedate
 )
 select
-  concat('BR:',municipal_code,':', @revisionyear) as objid,
+  concat('BR:',@municlass,':', @revisionyear) as objid,
   'APPROVED' as state,
   @revisionyear as ry,
   m.municipal_desc as appliedto,
@@ -47,8 +65,8 @@ insert ignore into training_etracs255.bldgassesslevel(
   previd
 )
 select distinct 
-  concat('BRA:',@municipalcode,':', @revisionyear, ':', a.class_code) as objid,
-  concat('BR:',@municipalcode,':', @revisionyear) as landrysettingid,
+  concat('BRA:',@municlass,':', @revisionyear, ':', a.class_code) as objid,
+  concat('BR:',@municlass,':', @revisionyear) as landrysettingid,
   c.class_group as classification_objid,
   c.class_code as code,
   c.class_desc as name,
@@ -61,6 +79,16 @@ and a.prop_type_code = 'B'
 and municipal_code = @municipalcode
 ;
 
+
+update rptis.m_assessment_levels a, rptis.m_classification c set 
+  a.xobjid = concat('BRA:',@municlass,':', @revisionyear, ':', a.class_code)
+where a.class_code = c.class_code
+and a.prop_type_code = 'B'
+and municipal_code = @municipalcode
+;
+
+
+
 insert ignore into training_etracs255.bldgassesslevelrange(
   objid,
   bldgassesslevelid,
@@ -70,9 +98,9 @@ insert ignore into training_etracs255.bldgassesslevelrange(
   rate
 )
 select 
-  concat('BRAR:',@municipalcode,':', @revisionyear, ':', a.class_code, ':', line_no) as objid,
-	concat('BRA:',@municipalcode,':', @revisionyear, ':', a.class_code) as objid,
-  concat('BR:',@municipalcode,':', @revisionyear) as landrysettingid,
+  concat('BRAR:',@municlass,':', @revisionyear, ':', a.class_code, ':', line_no) as objid,
+	concat('BRA:',@municlass,':', @revisionyear, ':', a.class_code) as objid,
+  concat('BR:',@municlass,':', @revisionyear) as landrysettingid,
   a.value_from as mvfrom,
   a.value_to as mvto,
   a.assessment_level * 100 as rate
@@ -82,15 +110,19 @@ and a.prop_type_code = 'B'
 and municipal_code = @municipalcode
 ;
 
+
+
 update 
 	rptis.m_assessment_levels a, 
 	rptis.m_classification c 
 set 
-  a.objid = concat('BRAR:',@municipalcode,':', @revisionyear, ':', a.class_code, ':', line_no)
+  a.xobjid = concat('BRAR:',@municlass,':', @revisionyear, ':', a.class_code, ':', line_no)
 where a.class_code = c.class_code
 and a.prop_type_code = 'B'
 and municipal_code = @municipalcode
 ;
+
+
 
 insert ignore into training_etracs255.bldgtype(
   objid,
@@ -104,8 +136,8 @@ insert ignore into training_etracs255.bldgtype(
   storeyadjtype
 )
 select 
-	concat('BT:',@municipalcode,':', @revisionyear, ':', struc_type) as objid,
-  concat('BR:',@municipalcode,':', @revisionyear) as bldgrysettingid,
+	concat('BT:',@municlass,':', @revisionyear, ':', replace(struc_type, ' ', '')) as objid,
+  concat('BR:',@municlass,':', @revisionyear) as bldgrysettingid,
   struc_type as code,
   struc_desc as name,
   'gap' as basevaluetype,
@@ -119,13 +151,14 @@ from rptis.m_building_structure_type
 
 
 alter table rptis.m_building_structure_type
-	add objid varchar(50)
+	add xobjid varchar(50)
 ;
 
 
 update rptis.m_building_structure_type set 
-	objid = concat('BT:',@municipalcode,':', @revisionyear, ':', struc_type)
+	xobjid = concat('BT:',@municlass,':', @revisionyear, ':', replace(struc_type, ' ', ''))
 ;
+
 
 
 
@@ -145,9 +178,9 @@ insert ignore into training_etracs255.bldgkindbucc(
   previd
 )
 select 
-  concat('BR:',@municipalcode,':', @revisionyear, ':', struc_type, ':', s.bldg_kind_code ) as objid,
-  concat('BR:',@municipalcode,':', @revisionyear) as bldgrysettingid,
-  concat('BT:',@municipalcode,':', @revisionyear, ':', struc_type) as bldgtypeid,
+  concat('BR:',@municlass,':', @revisionyear, ':', replace(struc_type, ' ', ''), ':', s.bldg_kind_code ) as objid,
+  concat('BR:',@municlass,':', @revisionyear) as bldgrysettingid,
+  concat('BT:',@municlass,':', @revisionyear, ':', replace(struc_type, ' ', '')) as bldgtypeid,
   s.bldg_kind_code as bldgkind_objid,
   'gap' as basevaluetype,
   0 as basevalue,
@@ -165,22 +198,17 @@ and year_from = @revisionyear
 ;
 
 
-
-
-alter table rptis.m_sched_bldg_cost  
-	add objid varchar(50)
+alter table rptis.m_sched_bldg_cost
+  add xobjid varchar(50)
 ;
 
-
-update 
-	rptis.m_building_structure_type st,
+update rptis.m_building_structure_type st,
 	rptis.m_sched_bldg_cost s
 set 
-  s.objid = concat('BR:',@municipalcode,':', @revisionyear, ':', struc_type, ':', s.bldg_kind_code )
+  s.xobjid = concat('BR:',@municlass,':', @revisionyear, ':', replace(struc_type, ' ', ''), ':', s.bldg_kind_code )
 where st.struc_code = s.struc_code
 and year_from = @revisionyear
 ;
-
 
 
 insert ignore into training_etracs255.bldgtype_depreciation(
@@ -192,9 +220,9 @@ insert ignore into training_etracs255.bldgtype_depreciation(
   rate
 )
 select 
-  concat('BTD:',@municipalcode,':', @revisionyear, ':', struc_type, ':', d.unique_code ) as objid,
-  concat('BT:',@municipalcode,':', @revisionyear, ':', struc_type) as bldgtypeid,
-  concat('BR:',@municipalcode,':', @revisionyear) as bldgrysettingid,
+  concat('BTD:',@municlass,':', @revisionyear, ':', replace(struc_type, ' ', ''), ':', d.unique_code ) as objid,
+  concat('BT:',@municlass,':', @revisionyear, ':', replace(struc_type, ' ', '')) as bldgtypeid,
+  concat('BR:',@municlass,':', @revisionyear) as bldgrysettingid,
   d.stage_from as agefrom,
   d.stage_to as ageto,
   d.percent_depreciation as rate
@@ -202,6 +230,7 @@ from rptis.m_building_structure_type st,
 	rptis.m_bldg_depreciation d
 where st.struc_code = d.struc_code
 ;
+
 
 
 insert ignore into training_etracs255.bldgtype_storeyadjustment(
@@ -213,9 +242,9 @@ insert ignore into training_etracs255.bldgtype_storeyadjustment(
   previd
 )
 select 
-  concat('BTSA:',@municipalcode,':', @revisionyear, ':', struc_type, ':', bldg_kind_code) as objid,
-  concat('BR:',@municipalcode,':', @revisionyear) as bldgrysettingid,
-  concat('BT:',@municipalcode,':', @revisionyear, ':', struc_type) as bldgtypeid,
+  concat('BTSA:',@municlass,':', @revisionyear, ':', replace(struc_type, ' ', ''), ':', bldg_kind_code) as objid,
+  concat('BR:',@municlass,':', @revisionyear) as bldgrysettingid,
+  concat('BT:',@municlass,':', @revisionyear, ':', replace(struc_type, ' ', '')) as bldgtypeid,
   2 as floorno,
   a.percent_value as rate,
   null as previd
@@ -226,22 +255,22 @@ where st.struc_code = a.struc_code
 
 
 
+
+
 alter table rptis.m_addtnl_every_floor_bldg
-	add objid varchar(50)
+	add xobjid varchar(50)
 ;
 
 update 
 	rptis.m_building_structure_type st,
 	rptis.m_addtnl_every_floor_bldg a
 set 
-  a.objid = concat('BTSA:',@municipalcode,':', @revisionyear, ':', struc_type, ':', bldg_kind_code)
+  a.xobjid = concat('BTSA:',@municlass,':', @revisionyear, ':', replace(struc_type, ' ', ''), ':', bldg_kind_code)
 where st.struc_code = a.struc_code
 ;
 
 
 
-delete from training_etracs255.bldgtype_storeyadjustment_bldgkind
-;
 
 insert ignore into training_etracs255.bldgtype_storeyadjustment_bldgkind(
   objid,
@@ -252,10 +281,10 @@ insert ignore into training_etracs255.bldgtype_storeyadjustment_bldgkind(
   bldgkindid
 )
 select 
-  concat('BTSAB:',@municipalcode,':', @revisionyear, ':', struc_type, ':', a.bldg_kind_code, ':', bldg_class_code) as objid,
-  concat('BR:',@municipalcode,':', @revisionyear) as bldgrysettingid,
-  concat('BTSA:',@municipalcode,':', @revisionyear, ':', struc_type, ':', bldg_kind_code) as parentid,
-  concat('BT:',@municipalcode,':', @revisionyear, ':', struc_type) as bldgtypeid,
+  concat('BTSAB:',@municlass,':', @revisionyear, ':',  replace(struc_type, ' ', ''), ':', a.bldg_kind_code, ':', bldg_class_code) as objid,
+  concat('BR:',@municlass,':', @revisionyear) as bldgrysettingid,
+  concat('BTSA:',@municlass,':', @revisionyear, ':', replace(struc_type, ' ', ''), ':', bldg_kind_code) as parentid,
+  concat('BT:',@municlass,':', @revisionyear, ':', replace(struc_type, ' ', '')) as bldgtypeid,
   2 as floorno,
   a.bldg_kind_code as bldgkindid
 from rptis.m_building_structure_type st,
@@ -266,16 +295,18 @@ where st.struc_code = a.struc_code
 
 
 alter table rptis.m_addtnl_every_floor_bldg
-	add storeyadjkindid varchar(50)
+	add xstoreyadjkindid varchar(50)
 ;
 
 update 
 	rptis.m_building_structure_type st,
 	rptis.m_addtnl_every_floor_bldg a
 set 
-  a.storeyadjkindid = concat('BTSAB:',@municipalcode,':', @revisionyear, ':', struc_type, ':', a.bldg_kind_code, ':', bldg_class_code)
+  a.xstoreyadjkindid = concat('BTSAB:',@municlass,':', @revisionyear, ':', struc_type, ':', a.bldg_kind_code, ':', bldg_class_code)
 where st.struc_code = a.struc_code
 ;
+
+
 
 insert ignore into training_etracs255.bldgadditionalitem(
   objid,
@@ -290,8 +321,8 @@ insert ignore into training_etracs255.bldgadditionalitem(
   idx
 )
 select 
-  concat('BR:',@municipalcode,':', @revisionyear,':', i.extra_desc) as objid,
-  concat('BR:',@municipalcode,':', @revisionyear) as bldgrysettingid,
+  concat('BR:',@municlass,':', @revisionyear,':', replace(i.extra_desc, ' ', '')) as objid,
+  concat('BR:',@municlass,':', @revisionyear) as bldgrysettingid,
   i.extra_code as code,
   i.extra_desc as name,
   '' as unit,
@@ -309,11 +340,11 @@ where i.year_from = @revisionyear
 
 
 alter table rptis.m_building_extra_items 
-	add objid varchar(100)
+	add xobjid varchar(100)
 ;
 
 update rptis.m_building_extra_items i set 
-	i.objid = concat('BR:',@municipalcode,':', @revisionyear,':', i.extra_desc)
+	i.xobjid = concat('BR:',@municlass,':', @revisionyear,':', replace(i.extra_desc, ' ', '')) 
 where i.year_from = @revisionyear
 ;
 

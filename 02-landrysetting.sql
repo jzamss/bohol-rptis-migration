@@ -15,7 +15,9 @@ set @municlass = '1ST';
 
 
 
-delete from training_etracs255.rysetting_lgu where lguid like concat('%', @municipalcode);
+delete from training_etracs255.rysetting_lgu 
+where lguid like concat('%', @municipalcode)
+and settingtype = 'land';
 
 delete from training_etracs255.landadjustmenttype_classification;
 delete from training_etracs255.landadjustmenttype;

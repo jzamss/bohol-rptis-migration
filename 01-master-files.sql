@@ -16,6 +16,7 @@ delete from training_etracs255.bldgassesslevelrange;
 delete from training_etracs255.bldgassesslevel;
 delete from training_etracs255.bldgkindbucc;
 delete from training_etracs255.bldgtype_depreciation;
+delete from training_etracs255.bldgtype_storeyadjustment_bldgkind;
 delete from training_etracs255.bldgtype_storeyadjustment;
 delete from training_etracs255.bldgtype;
 delete from training_etracs255.bldgrysetting;
