@@ -77,15 +77,15 @@ insert ignore into training_etracs255.landassesslevel(
 select
   concat('LRA:',@municlass,':', @revisionyear, '-',c.class_code) as objid,
   concat('LR:',@municlass,':', @revisionyear) as landrysettingid,
-  c.class_group as classification_objid,
+  (select objid from training_etracs255.propertyclassification where objid = c.class_group) as classification_objid,
   c.class_code as code,
   c.class_desc as name,
   case when a.value_from is null then 1 else 0 end as fixrate,
   a.assessment_level * 100 as rate,
   null as previd
-from rptis.m_assessment_levels a, rptis.m_classification c 
-where a.class_code = c.class_code
-and a.prop_type_code = 'L'
+from rptis_talibon.m_assessment_levels a
+left join rptis_talibon.m_classification c on a.class_code = c.class_code
+where a.prop_type_code = 'L'
 and municipal_code = @municipalcode
 ;
 
