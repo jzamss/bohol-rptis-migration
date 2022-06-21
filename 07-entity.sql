@@ -112,25 +112,6 @@ where owner_desc is not null
 update training_etracs255.entity set address_objid = objid
 ;
 
-insert ignore into training_etracs255.entityindividual (
-  objid,
-  lastname,
-  firstname,
-  middlename,
-  gender
-)
-select 
-  xobjid,
-  '' as lastname,
-  '' as firstname,
-  '' as middlename,
-  null as gender
-from rptis.m_owner 
-where owner_desc is not null 
-and owner_type = 'I'
-;
-
-
 alter table training_etracs255.entityindividual  
 	modify column lastname varchar(380)
 ;
