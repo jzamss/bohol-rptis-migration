@@ -6,11 +6,25 @@ IMPORTANT !!!
     PLEASE SET BEFORE EXECUTING:
       @revisionyear
       @municipalcode
+      @municlass
 =================================================*/
 
 set @revisionyear = 2016;
 set @municipalcode = 42;
+set @municlass = '1ST';
 
+
+
+delete from training_etracs255.rysetting_lgu where lguid like concat('%', @municipalcode);
+
+delete from training_etracs255.landadjustmenttype_classification;
+delete from training_etracs255.landadjustmenttype;
+delete from training_etracs255.landassesslevelrange;
+delete from training_etracs255.landassesslevel;
+delete from training_etracs255.lcuvstripping;
+delete from training_etracs255.lcuvsubclass;
+delete from training_etracs255.lcuvspecificclass;
+delete from training_etracs255.landrysetting;
 
 insert ignore into training_etracs255.landrysetting(
   objid,
@@ -23,7 +37,7 @@ insert ignore into training_etracs255.landrysetting(
   ordinancedate
 )
 select
-  concat('LR:',@municipalcode,':', @revisionyear) as objid,
+  concat('LR:',@municlass,':', @revisionyear) as objid,
   'APPROVED' as state,
   @revisionyear as ry,
   m.municipal_desc as appliedto,
@@ -31,14 +45,15 @@ select
   null as remarks,
   '' as ordinanceno,
   null as ordinancedate
-from rptis.m_municipality m
+from rptis_talibon.m_municipality m
 where m.municipal_code = @municipalcode
 ;
 
 
 
-update rptis.m_assessment_levels set municipal_code = @municipalcode
+update rptis_talibon.m_assessment_levels set municipal_code = @municipalcode
 ;
+
 
 
 insert ignore into training_etracs255.landassesslevel(
@@ -52,34 +67,35 @@ insert ignore into training_etracs255.landassesslevel(
   previd
 )
 select
-  concat('LRA:',@municipalcode,':', @revisionyear, line_no) as objid,
-  concat('LR:',@municipalcode,':', @revisionyear) as landrysettingid,
+  concat('LRA:',@municlass,':', @revisionyear, '-',c.class_code) as objid,
+  concat('LR:',@municlass,':', @revisionyear) as landrysettingid,
   c.class_group as classification_objid,
   c.class_code as code,
   c.class_desc as name,
   case when a.value_from is null then 1 else 0 end as fixrate,
   a.assessment_level * 100 as rate,
   null as previd
-from rptis.m_assessment_levels a, rptis.m_classification c 
+from rptis_talibon.m_assessment_levels a, rptis_talibon.m_classification c 
 where a.class_code = c.class_code
 and a.prop_type_code = 'L'
 and municipal_code = @municipalcode
 ;
 
-alter table rptis.m_assessment_levels 
-	add objid varchar(50)
+
+
+alter table rptis_talibon.m_assessment_levels 
+	add xobjid varchar(50)
 ;
 
 update 
-	rptis.m_assessment_levels a, 
-	rptis.m_classification c
+	rptis_talibon.m_assessment_levels a, 
+	rptis_talibon.m_classification c
 set 
-  a.objid = concat('LRA:',@municipalcode,':', @revisionyear, line_no)
+  a.xobjid = concat('LRA:',@municlass,':', @revisionyear, '-',c.class_code)
 where a.class_code = c.class_code
 and a.prop_type_code = 'L'
 and municipal_code = @municipalcode
 ;
-
 
 
 insert ignore into training_etracs255.lcuvspecificclass(
@@ -91,24 +107,24 @@ insert ignore into training_etracs255.lcuvspecificclass(
   landspecificclass_objid
 )
 select
-  concat('LRSPC:',@municipalcode,':', @revisionyear, ':', class_code) as objid,
-  concat('LR:',@municipalcode,':', @revisionyear) as landrysettingid,
+  concat('LRSPC:',@municlass,':', @revisionyear, ':', class_code) as objid,
+  concat('LR:',@municlass,':', @revisionyear) as landrysettingid,
   class_group as classification_objid,
   case when class_group = 'A' then 'HA' else 'SQM' end  areatype,
   null as previd,
   class_code as  landspecificclass_objid
-from rptis.m_classification
+from rptis_talibon.m_classification
 ;
 
 
-alter table rptis.m_classification 
-	add objid varchar(50)
+
+alter table rptis_talibon.m_classification 
+	add xobjid varchar(50)
 ;
 
-update rptis.m_classification set 
-  objid = concat('LRSPC:',@municipalcode,':', @revisionyear, ':', class_code)
+update rptis_talibon.m_classification set 
+  xobjid = concat('LRSPC:',@municlass,':', @revisionyear, ':', class_code)
 ;
-
 
 
 insert ignore into training_etracs255.lcuvsubclass(
@@ -121,34 +137,33 @@ insert ignore into training_etracs255.lcuvsubclass(
   previd
 )
 select
-  concat('LRSUB:',@municipalcode,':', @revisionyear, ':', c.sub_class_code, ':', v.class_level_code) as objid,
-	concat('LRSPC:',@municipalcode,':', @revisionyear, ':', c.class_code) as specificclass_objid,
-  concat('LR:',@municipalcode,':', @revisionyear) as landrysettingid,
+  concat('LRSUB:',@municlass,':', @revisionyear, ':', c.sub_class_code, ':', v.class_level_code) as objid,
+	concat('LRSPC:',@municlass,':', @revisionyear, ':', c.class_code) as specificclass_objid,
+  concat('LR:',@municlass,':', @revisionyear) as landrysettingid,
   concat(c.sub_class_code, substring(v.class_level_code, 1,1)) as code,
   concat(v.class_level_code, ' CLASS') as name,
   v.class_level_amt as unitvalue,
   null as previd
-from rptis.m_classification c
-inner join rptis.m_unit_value v on c.class_code = v.class_code
+from rptis_talibon.m_classification c
+inner join rptis_talibon.m_unit_value v on c.class_code = v.class_code
 ;
 
-alter table rptis.m_unit_value 
-	add objid varchar(50),
-	add spcid varchar(50)
+alter table rptis_talibon.m_unit_value 
+	add xobjid varchar(50),
+	add xspcid varchar(50)
 ;
 
 update 
-	rptis.m_classification c,
-	rptis.m_unit_value v 
+	rptis_talibon.m_classification c,
+	rptis_talibon.m_unit_value v 
 set 
-  v.objid = concat('LRSUB:',@municipalcode,':', @revisionyear, ':', c.sub_class_code, ':', v.class_level_code),
-	v.spcid = concat('LRSPC:',@municipalcode,':', @revisionyear, ':', c.class_code)
+  v.xobjid = concat('LRSUB:',@municlass,':', @revisionyear, ':', c.sub_class_code, ':', v.class_level_code),
+	v.xspcid = concat('LRSPC:',@municlass,':', @revisionyear, ':', c.class_code)
 where c.class_code = v.class_code
 ;
 
 
-delete from training_etracs255.landadjustmenttype
-;
+
 
 insert ignore into training_etracs255.landadjustmenttype(
   objid,
@@ -161,8 +176,8 @@ insert ignore into training_etracs255.landadjustmenttype(
   idx
 )
 select  distinct 
-  concat('LRAT:',@municipalcode,':', @revisionyear, ':', f.adjustment_desc) as objid,
-  concat('LR:',@municipalcode,':', @revisionyear) as landrysettingid,
+  concat('LRAT:',@municlass,':', @revisionyear, ':', replace(f.adjustment_desc,' ', '')) as objid,
+  concat('LR:',@municlass,':', @revisionyear) as landrysettingid,
   substr(f.adjustment_desc, 1, 5) as code,
   f.adjustment_desc as name,
 	case 
@@ -172,27 +187,34 @@ select  distinct
   null as appliedto,
   null as previd,
   0 as idx
-from rptis.m_adjustment_factor f, 
-	rptis.m_adjustment_type a,
-	rptis.m_classification c, 
-	rptis.m_prop_classification p
+from rptis_talibon.m_adjustment_factor f, 
+	rptis_talibon.m_adjustment_type a,
+	rptis_talibon.m_classification c, 
+	rptis_talibon.m_prop_classification p
 where f.adj_type_code = a.adj_type_code
 and f.class_code = c.class_code
 and c.class_group = p.prop_class_code
 and f.adj_type_code <> 55
 ;
 
-update rptis.m_adjustment_factor f, 
-	rptis.m_adjustment_type a,
-	rptis.m_classification c, 
-	rptis.m_prop_classification p
+alter table rptis_talibon.m_adjustment_factor 
+	add xobjid varchar(50)
+;
+
+
+update rptis_talibon.m_adjustment_factor f, 
+	rptis_talibon.m_adjustment_type a,
+	rptis_talibon.m_classification c, 
+	rptis_talibon.m_prop_classification p
 set 
-  f.objid = concat('LRAT:',@municipalcode,':', @revisionyear, ':', f.adjustment_desc)
+  f.xobjid = concat('LRAT:',@municlass,':', @revisionyear, ':', replace(f.adjustment_desc,' ', ''))
 where f.adj_type_code = a.adj_type_code
 and f.class_code = c.class_code
 and c.class_group = p.prop_class_code
 and f.adj_type_code <> 55
 ;
+
+
 
 
 
@@ -213,6 +235,7 @@ select
   (select name from training_etracs255.municipality) as lguname
 from training_etracs255.landrysetting
 ;
+
 
 
 
