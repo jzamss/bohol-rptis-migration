@@ -47,7 +47,7 @@ select
   xobjid as objid,
   xobjid as entityno,
   owner_desc as name,
-  owner_adderss as address_text,
+  ifnull(owner_adderss, '-') as address_text,
   case 
 		when owner_type = 'I' then 'INDIVIDUAL' 
 		when owner_type = 'C' then 'JURIDICAL' 
