@@ -3,7 +3,7 @@
 *    1. REPLACE ALL instances of "training_etracs255" with 
 *       the actual ETRACS db name
 *    2. REPLACE ALL instances of "rptis." with the actual RPTIS Database
-*       Name such as "rptis_talibon"
+*       Name such as "rptis_talibon."
 *    3. Execute ALL script by pressing CTRL + R
 
 IMPORTANT !!!  
