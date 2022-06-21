@@ -36,10 +36,6 @@ update rptis.m_owner set
 	xobjid = concat('047', @municipalcode, owner_code)
 ;
 
-set @revisionyear = 2016;
-set @municipalcode = 42;
-set @municlass = '1ST';
-
 insert ignore into training_etracs255.entity (
   objid,
   entityno,
