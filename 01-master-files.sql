@@ -1,3 +1,15 @@
+/*=====================================================================
+* MASTER FILES 
+*
+* STEPS:
+*    1. REPLACE ALL instances of "training_etracs255" with 
+*       the actual ETRACS db name
+*    2. REPLACE ALL instances of "rptis." with the actual RPTIS Database
+*       Name such as "rptis_talibon."
+*    3. Execute ALL script by pressing CTRL + R
+======================================================================*/
+
+
 
 /* MASTER DATA */
 delete from training_etracs255.rysetting_lgu;
@@ -98,7 +110,7 @@ select
   'APPROVED' as state,
   class_code as code,
   class_desc as name
-from rptis_talibon.m_classification
+from rptis.m_classification
 ;  
 
 insert into training_etracs255.bldgkind(
@@ -112,7 +124,7 @@ select
   'APPROVED' as state,
   bldg_kind_code as code,
   bldg_kind_desc as name
-from rptis_talibon.m_building_kinds
+from rptis.m_building_kinds
 ;  
 
 insert ignore into training_etracs255.material(
@@ -126,9 +138,9 @@ select
   'APPROVED' as state,
   bldg_matls_code as code,
   bldg_matls_desc as name
-from rptis_talibon.m_building_materials 
+from rptis.m_building_materials 
 where bldg_matls_desc in(
-	select DISTINCT bldg_matls_desc from rptis_talibon.m_building_materials 
+	select DISTINCT bldg_matls_desc from rptis.m_building_materials 
 )
 ;  
 
@@ -144,7 +156,7 @@ select
   'APPROVED' as state,
   bldg_components_code code,
   bldg_components_desc as name
-from rptis_talibon.m_building_components
+from rptis.m_building_components
 ;  
 
 
@@ -159,7 +171,7 @@ select
   'APPROVED' as state,
   mach_type_code as code,
   mach_type_desc as name
-from rptis_talibon.m_machine_type
+from rptis.m_machine_type
 ;
 
 insert ignore into training_etracs255.planttree(
@@ -173,6 +185,6 @@ select
   'APPROVED' as state,
   plant_code as code,
   plant_desc as name
-from rptis_talibon.m_plants_trees_entry
+from rptis.m_plants_trees_entry
 ;
 

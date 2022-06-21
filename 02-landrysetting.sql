@@ -1,13 +1,19 @@
-/* LAND SMV */ 
+/*=====================================================================
+* STEPS:
+*    1. REPLACE ALL instances of "training_etracs255" with 
+*       the actual ETRACS db name
+*    2. REPLACE ALL instances of "rptis." with the actual RPTIS Database
+*       Name such as "rptis_talibon"
+*    3. Execute ALL script by pressing CTRL + R
 
-
-/*=================================================
 IMPORTANT !!!  
     PLEASE SET BEFORE EXECUTING:
       @revisionyear
       @municipalcode
       @municlass
-=================================================*/
+
+======================================================================*/
+
 
 set @revisionyear = 2016;
 set @municipalcode = 42;
@@ -47,13 +53,13 @@ select
   null as remarks,
   '' as ordinanceno,
   null as ordinancedate
-from rptis_talibon.m_municipality m
+from rptis.m_municipality m
 where m.municipal_code = @municipalcode
 ;
 
 
 
-update rptis_talibon.m_assessment_levels set municipal_code = @municipalcode
+update rptis.m_assessment_levels set municipal_code = @municipalcode
 ;
 
 
@@ -77,7 +83,7 @@ select
   case when a.value_from is null then 1 else 0 end as fixrate,
   a.assessment_level * 100 as rate,
   null as previd
-from rptis_talibon.m_assessment_levels a, rptis_talibon.m_classification c 
+from rptis.m_assessment_levels a, rptis.m_classification c 
 where a.class_code = c.class_code
 and a.prop_type_code = 'L'
 and municipal_code = @municipalcode
@@ -85,13 +91,13 @@ and municipal_code = @municipalcode
 
 
 
-alter table rptis_talibon.m_assessment_levels 
+alter table rptis.m_assessment_levels 
 	add xobjid varchar(50)
 ;
 
 update 
-	rptis_talibon.m_assessment_levels a, 
-	rptis_talibon.m_classification c
+	rptis.m_assessment_levels a, 
+	rptis.m_classification c
 set 
   a.xobjid = concat('LRA:',@municlass,':', @revisionyear, '-',c.class_code)
 where a.class_code = c.class_code
@@ -115,16 +121,16 @@ select
   case when class_group = 'A' then 'HA' else 'SQM' end  areatype,
   null as previd,
   class_code as  landspecificclass_objid
-from rptis_talibon.m_classification
+from rptis.m_classification
 ;
 
 
 
-alter table rptis_talibon.m_classification 
+alter table rptis.m_classification 
 	add xobjid varchar(50)
 ;
 
-update rptis_talibon.m_classification set 
+update rptis.m_classification set 
   xobjid = concat('LRSPC:',@municlass,':', @revisionyear, ':', class_code)
 ;
 
@@ -146,18 +152,18 @@ select
   concat(v.class_level_code, ' CLASS') as name,
   v.class_level_amt as unitvalue,
   null as previd
-from rptis_talibon.m_classification c
-inner join rptis_talibon.m_unit_value v on c.class_code = v.class_code
+from rptis.m_classification c
+inner join rptis.m_unit_value v on c.class_code = v.class_code
 ;
 
-alter table rptis_talibon.m_unit_value 
+alter table rptis.m_unit_value 
 	add xobjid varchar(50),
 	add xspcid varchar(50)
 ;
 
 update 
-	rptis_talibon.m_classification c,
-	rptis_talibon.m_unit_value v 
+	rptis.m_classification c,
+	rptis.m_unit_value v 
 set 
   v.xobjid = concat('LRSUB:',@municlass,':', @revisionyear, ':', c.sub_class_code, ':', v.class_level_code),
 	v.xspcid = concat('LRSPC:',@municlass,':', @revisionyear, ':', c.class_code)
@@ -189,25 +195,25 @@ select  distinct
   null as appliedto,
   null as previd,
   0 as idx
-from rptis_talibon.m_adjustment_factor f, 
-	rptis_talibon.m_adjustment_type a,
-	rptis_talibon.m_classification c, 
-	rptis_talibon.m_prop_classification p
+from rptis.m_adjustment_factor f, 
+	rptis.m_adjustment_type a,
+	rptis.m_classification c, 
+	rptis.m_prop_classification p
 where f.adj_type_code = a.adj_type_code
 and f.class_code = c.class_code
 and c.class_group = p.prop_class_code
 and f.adj_type_code <> 55
 ;
 
-alter table rptis_talibon.m_adjustment_factor 
+alter table rptis.m_adjustment_factor 
 	add xobjid varchar(50)
 ;
 
 
-update rptis_talibon.m_adjustment_factor f, 
-	rptis_talibon.m_adjustment_type a,
-	rptis_talibon.m_classification c, 
-	rptis_talibon.m_prop_classification p
+update rptis.m_adjustment_factor f, 
+	rptis.m_adjustment_type a,
+	rptis.m_classification c, 
+	rptis.m_prop_classification p
 set 
   f.xobjid = concat('LRAT:',@municlass,':', @revisionyear, ':', replace(f.adjustment_desc,' ', ''))
 where f.adj_type_code = a.adj_type_code

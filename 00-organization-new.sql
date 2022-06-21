@@ -1,12 +1,22 @@
-/*======================================================= 
+/*=====================================================================
 * FOR NEW INSTALLATION 
 *  - BUILD ORG FROM M_BARANGAY
-=======================================================*/
+*
+* STEPS:
+*    1. CHANGE "training_etracs255" with the actual ETRACS db name
+*    2. CHANGE @municipalcode to INDEX NUMBER of your municipality
+*    3. REPLACE ALL instances of "rptis." with the actual RPTIS Database
+*       Name such as "rptis_talibon."
+*    4. Execute ALL script by pressing CTRL + R
+======================================================================*/
 
 
 use training_etracs255
 ;
 
+
+set @municipalcode = '42'
+;
 
 -- Clear Organization Data
 
@@ -63,8 +73,9 @@ select
   concat('047-',repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code)  as code,
   1 as root,
   concat('047', repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code ) as txncode
-from m_municipality m,  m_barangay b 
+from rptis.m_municipality m,  rptis.m_barangay b 
 where m.municipal_code = b.municipal_code
+and m.municipal_code = @municipalcode
 limit 1;
 ;
 
@@ -81,15 +92,16 @@ insert into sys_org (
   txncode
 )
 select
-concat('047',municipal_code,repeat('0',4 - LENGTH(brgy_code)), brgy_code) as objid,
-brgy_desc as name,
-'BARANGAY' as orgclass,
-concat('047',municipal_code) as parent_objid,
-'MUNICIPALITY' as parent_orgclass,
-concat('047-',municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code) as code,
-0 as root,
-concat('047',municipal_code,repeat('0',4 - LENGTH(brgy_code)), brgy_code) as txncode
+  concat('047',municipal_code,repeat('0',4 - LENGTH(brgy_code)), brgy_code) as objid,
+  brgy_desc as name,
+  'BARANGAY' as orgclass,
+  concat('047',municipal_code) as parent_objid,
+  'MUNICIPALITY' as parent_orgclass,
+  concat('047-',municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code) as code,
+  0 as root,
+  concat('047',municipal_code,repeat('0',4 - LENGTH(brgy_code)), brgy_code) as txncode
 from rptis.m_barangay  
+where municipal_code = @municipalcode
 ;
 
 insert into province (
@@ -126,8 +138,9 @@ select
   concat('047-',repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code) as pin,
   municipal_desc as name,
   '047' as parentid
-from m_municipality m,  m_barangay b 
+from rptis.m_municipality m,  rptis.m_barangay b 
 where m.municipal_code = b.municipal_code
+and m.municipal_code = @municipalcode
 limit 1;
 ;
 
@@ -147,6 +160,7 @@ select
   brgy_desc,
   concat('047',municipal_code) as parentid
 from rptis.m_barangay
+where municipal_code = @municipalcode
 ;
 
 
