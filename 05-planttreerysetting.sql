@@ -42,7 +42,7 @@ select
   null as remarks,
   '' as ordinanceno,
   null as ordinancedate
-from rptis_talibon.m_municipality m
+from rptis.m_municipality m
 where m.municipal_code = @municipalcode
 ;
 
@@ -68,14 +68,14 @@ select distinct
   1 as fixrate,
   assessment_level * 100 as rate,
   null as previd
-from rptis_talibon.m_assessment_levels a, rptis_talibon.m_classification c 
+from rptis.m_assessment_levels a, rptis.m_classification c 
 where a.class_code = c.class_code
 and a.prop_type_code = 'P'
 and municipal_code = @municipalcode
 ;
 
 
-update rptis_talibon.m_assessment_levels a, rptis_talibon.m_classification c set 
+update rptis.m_assessment_levels a, rptis.m_classification c set 
   a.xobjid = concat('PA:',@municlass,':', @revisionyear, ':', a.class_code)
 where a.class_code = c.class_code
 and a.prop_type_code = 'P'
@@ -101,16 +101,16 @@ select
   concat(tu.class_level_code, ' CLASS') as name,
   tu.value_for_every_unit as unitvalue,
   null as previd
-from rptis_talibon.m_plants_trees tu, rptis_talibon.m_plants_trees_entry t
+from rptis.m_plants_trees tu, rptis.m_plants_trees_entry t
 where tu.plant_code = t.plant_code 
 ;
 
 
-alter table rptis_talibon.m_plants_trees 
+alter table rptis.m_plants_trees 
 	add xobjid varchar(50)
 ;
 
-update rptis_talibon.m_plants_trees tu, rptis_talibon.m_plants_trees_entry t set 
+update rptis.m_plants_trees tu, rptis.m_plants_trees_entry t set 
   tu.xobjid = concat('PR:',@municlass,':', @revisionyear, ':', replace(t.plant_desc, ' ', ''), ':', tu.class_level_code) 
 where tu.plant_code = t.plant_code 
 ;

@@ -1,4 +1,4 @@
-/* LAND SMV */
+/* LAND SMV */ 
 
 
 /*=================================================
@@ -11,7 +11,7 @@ IMPORTANT !!!
 
 set @revisionyear = 2016;
 set @municipalcode = 42;
-set @municlass = '1ST';
+set @municlass = '2ND';
 
 
 

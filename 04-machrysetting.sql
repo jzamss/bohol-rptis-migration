@@ -43,7 +43,7 @@ select
   null as remarks,
   '' as ordinanceno,
   null as ordinancedate
-from rptis_talibon.m_municipality m
+from rptis.m_municipality m
 where m.municipal_code = @municipalcode
 ;
 
@@ -67,14 +67,14 @@ select distinct
   1 as fixrate,
   assessment_level * 100 as rate,
   null as previd
-from rptis_talibon.m_assessment_levels a, rptis_talibon.m_classification c 
+from rptis.m_assessment_levels a, rptis.m_classification c 
 where a.class_code = c.class_code
 and a.prop_type_code = 'M'
 and municipal_code = @municipalcode
 ;
 
 
-update rptis_talibon.m_assessment_levels a, rptis_talibon.m_classification c set 
+update rptis.m_assessment_levels a, rptis.m_classification c set 
   a.objid = concat('MRA:',@municlass,':', @revisionyear, ':', a.class_code)
 where a.class_code = c.class_code
 and a.prop_type_code = 'M'
