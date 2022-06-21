@@ -19,12 +19,12 @@ set @municipalcode = 42;
 set @municlass = '1ST';
 
 /* build realproperty info */
-alter table rptis_talibon.h_property_info 
+alter table rptis.h_property_info 
 	add xrpid varchar(50)
 ;
 
 
-update rptis_talibon.h_property_info  set 
+update rptis.h_property_info  set 
 	xrpid = trans_stamp
 where prop_type_code = 'L'
 ;
@@ -77,7 +77,7 @@ select
   b.brgyid as barangayid,
   'municipality' as lgutype,
   b.lguid as lguid
-from rptis_talibon.h_property_info p, rptis_talibon.m_barangay b 
+from rptis.h_property_info p, rptis.m_barangay b 
 where p.prop_type_code = 'L'
 and p.municipal_code = b.municipal_code
 and p.brgy_code = b.brgy_code
@@ -87,7 +87,7 @@ and p.brgy_code = b.brgy_code
 insert ignore into training_etracs255.rpumaster (
   objid
 )
-select pin_no from rptis_talibon.h_property_info
+select pin_no from rptis.h_property_info
 ;
 
 
@@ -112,7 +112,7 @@ select
 	end) as totalareaha,
   sum(market_value) as totalmv,
   sum(assessed_value) as totalav
-from rptis_talibon.p_ar a 
+from rptis.p_ar a 
 group by a.trans_stamp, a.kind, a.pin_no
 ;
 
@@ -121,15 +121,15 @@ create index ix_rpuid on zztmp_rpu_info(xrpuid)
 
 
 /* UPDATE IMPROVEMENT xrpid */
-create index ix_pinno on rptis_talibon.h_property_info(pin_no)
+create index ix_pinno on rptis.h_property_info(pin_no)
 ;
-create index ix_rpid on rptis_talibon.h_property_info(xrpid)
+create index ix_rpid on rptis.h_property_info(xrpid)
 ;
-create index ix_ref_land_pin_no on rptis_talibon.h_property_info(ref_land_pin_no)
+create index ix_ref_land_pin_no on rptis.h_property_info(ref_land_pin_no)
 ;
 
 
-update rptis_talibon.h_property_info i, rptis_talibon.h_property_info l set 
+update rptis.h_property_info i, rptis.h_property_info l set 
 	i.xrpid = l.xrpid
 where i.ref_land_pin_no = l.pin_no
 and i.prop_type_code <> 'L'
@@ -141,11 +141,11 @@ alter table training_etracs255.rpu modify column fullpin varchar(25)
 ;
 
 /* GENERATE SUFFIX */
-alter table rptis_talibon.h_property_info  
+alter table rptis.h_property_info  
 	add suffix int
 ;
 
-update rptis_talibon.h_property_info  set 
+update rptis.h_property_info  set 
 	suffix = right(pin_no, 4)
 where prop_type_code <> 'L'
 ;
@@ -204,7 +204,7 @@ select
 		when a.kind = 'L' then a.area * 10000
 		else a.area 
 	end) as totalareasqm,
-  0 as totalbmv,
+  sum(a.market_value) as totalbmv,
   sum(a.market_value) as totalmv,
   sum(a.assessed_value) as totalav,
   0 as hasswornamount,
@@ -214,18 +214,18 @@ select
   p.pin_no as  rpumasterid,
   0 as reclassed,
   0 as isonline
-from rptis_talibon.h_property_info p, rptis_talibon.p_ar a 
+from rptis.h_property_info p, rptis.p_ar a 
 where p.trans_stamp = a.trans_stamp
 group by p.trans_stamp 
 ;
 
 
 /* MAPPING TXN TYPE */
-alter table rptis_talibon.p_ar 
+alter table rptis.p_ar 
 	add xtxntype varchar(5)
 ;
 
-update rptis_talibon.p_ar  set 
+update rptis.p_ar  set 
 	xtxntype = 
 	case 
 		when trans_code = 'R' then 'RE'
@@ -360,12 +360,12 @@ select distinct
   null as cancelledday,
   b.lguid as originlguid
 from 
-	rptis_talibon.p_ar a, 
-	rptis_talibon.h_property_info p,
-	rptis_talibon.d_owner o,
-	rptis_talibon.m_owner mo,
-	rptis_talibon.c_faas_summary s,
-	rptis_talibon.m_barangay b 
+	rptis.p_ar a, 
+	rptis.h_property_info p,
+	rptis.d_owner o,
+	rptis.m_owner mo,
+	rptis.c_faas_summary s,
+	rptis.m_barangay b 
 where p.trans_stamp = a.trans_stamp
 and p.trans_stamp = o.trans_stamp
 and o.owner_code = mo.owner_code
@@ -499,14 +499,14 @@ update training_etracs255.planttreerysetting set
 
 /* RPU ASSESSMENT*/
 
-alter table rptis_talibon.p_ar 
+alter table rptis.p_ar 
 	add xoid varchar(50)
 ;
 
-create unique index ux_oid on rptis_talibon.p_ar (xoid)
+create unique index ux_oid on rptis.p_ar (xoid)
 ;
 
-update rptis_talibon.p_ar set xoid = md5(concat(rand(),line_no))
+update rptis.p_ar set xoid = md5(concat(rand(),line_no))
 ;
 
 
@@ -550,10 +550,11 @@ select
 	end as rputype,
   case when a.taxability = 'T' then 1 else 0 end as taxable
 from 
-	rptis_talibon.p_ar a, 
-	rptis_talibon.h_property_info p,
-	rptis_talibon.m_assessment_levels al 
+	rptis.p_ar a, 
+	rptis.h_property_info p,
+	rptis.m_assessment_levels al 
 where p.trans_stamp = a.trans_stamp
 and a.actual_use = al.class_code
+and p.prop_type_code = al.prop_type_code
 ;
 
