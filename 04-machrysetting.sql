@@ -6,10 +6,22 @@ IMPORTANT !!!
     PLEASE SET BEFORE EXECUTING:
       @revisionyear
       @municipalcode
+      @municlass
 =================================================*/
 
 set @revisionyear = 2016;
 set @municipalcode = 42;
+set @municlass = '1ST';
+
+
+delete from training_etracs255.rysetting_lgu 
+where lguid like concat('%', @municipalcode)
+and settingtype = 'mach';
+
+delete from training_etracs255.machforex;
+delete from training_etracs255.machassesslevelrange;
+delete from training_etracs255.machassesslevel;
+delete from training_etracs255.machrysetting;
 
 
 insert ignore into training_etracs255.machrysetting(
@@ -23,7 +35,7 @@ insert ignore into training_etracs255.machrysetting(
   ordinancedate
 )
 select
-  concat('MR:',municipal_code,':', @revisionyear) as objid,
+  concat('MR:',@municlass,':', @revisionyear) as objid,
   'APPROVED' as state,
   @revisionyear as ry,
   m.municipal_desc as appliedto,
@@ -31,7 +43,7 @@ select
   null as remarks,
   '' as ordinanceno,
   null as ordinancedate
-from rptis.m_municipality m
+from rptis_talibon.m_municipality m
 where m.municipal_code = @municipalcode
 ;
 
@@ -47,15 +59,15 @@ insert ignore into training_etracs255.machassesslevel(
   previd
 )
 select distinct 
-  concat('MRA:',@municipalcode,':', @revisionyear, ':', a.class_code) as objid,
-  concat('MR:',@municipalcode,':', @revisionyear) as landrysettingid,
+  concat('MRA:',@municlass,':', @revisionyear, ':', a.class_code) as objid,
+  concat('MR:',@municlass,':', @revisionyear) as machrysetting,
   c.class_group as classification_objid,
   c.class_code as code,
   c.class_desc as name,
   1 as fixrate,
   assessment_level * 100 as rate,
   null as previd
-from rptis.m_assessment_levels a, rptis.m_classification c 
+from rptis_talibon.m_assessment_levels a, rptis_talibon.m_classification c 
 where a.class_code = c.class_code
 and a.prop_type_code = 'M'
 and municipal_code = @municipalcode
@@ -63,7 +75,7 @@ and municipal_code = @municipalcode
 
 
 update rptis_talibon.m_assessment_levels a, rptis_talibon.m_classification c set 
-  a.objid = concat('MRA:',@municipalcode,':', @revisionyear, ':', a.class_code) 
+  a.objid = concat('MRA:',@municlass,':', @revisionyear, ':', a.class_code)
 where a.class_code = c.class_code
 and a.prop_type_code = 'M'
 and municipal_code = @municipalcode
@@ -87,4 +99,5 @@ select
   (select name from training_etracs255.municipality) as lguname
 from training_etracs255.machrysetting
 ;
+
 

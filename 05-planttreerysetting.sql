@@ -10,6 +10,17 @@ IMPORTANT !!!
 
 set @revisionyear = 2016;
 set @municipalcode = 42;
+set @municlass = '1ST';
+
+
+delete from training_etracs255.rysetting_lgu 
+where lguid like concat('%', @municipalcode)
+and settingtype = 'planttree';
+
+delete from training_etracs255.planttreeunitvalue;
+delete from training_etracs255.planttreeassesslevel;
+delete from training_etracs255.planttreerysetting;
+
 
 
 insert ignore into training_etracs255.planttreerysetting(
@@ -23,7 +34,7 @@ insert ignore into training_etracs255.planttreerysetting(
   ordinancedate
 )
 select
-  concat('PR:',municipal_code,':', @revisionyear) as objid,
+  concat('PR:',@municlass,':', @revisionyear) as objid,
   'APPROVED' as state,
   @revisionyear as ry,
   m.municipal_desc as appliedto,
@@ -34,6 +45,7 @@ select
 from rptis_talibon.m_municipality m
 where m.municipal_code = @municipalcode
 ;
+
 
 
 
@@ -48,8 +60,8 @@ insert ignore into training_etracs255.planttreeassesslevel(
   previd
 )
 select distinct 
-  concat('PA:',@municipalcode,':', @revisionyear, ':', a.class_code) as objid,
-  concat('PR:',@municipalcode,':', @revisionyear) as planttreerysettingid,
+  concat('PA:',@municlass,':', @revisionyear, ':', a.class_code) as objid,
+  concat('PR:',@municlass,':', @revisionyear) as planttreerysettingid,
   c.class_group as classification_objid,
   c.class_code as code,
   c.class_desc as name,
@@ -64,7 +76,7 @@ and municipal_code = @municipalcode
 
 
 update rptis_talibon.m_assessment_levels a, rptis_talibon.m_classification c set 
-  a.objid = concat('PA:',@municipalcode,':', @revisionyear, ':', a.class_code) 
+  a.xobjid = concat('PA:',@municlass,':', @revisionyear, ':', a.class_code)
 where a.class_code = c.class_code
 and a.prop_type_code = 'P'
 and municipal_code = @municipalcode
@@ -82,8 +94,8 @@ insert ignore into training_etracs255.planttreeunitvalue(
   previd
 )
 select  
-  concat('PR:',@municipalcode,':', @revisionyear, ':', tu.plant_code, ':', tu.class_level_code) as objid,
-  concat('PR:',@municipalcode,':', @revisionyear) as planttreerysettingid,
+  concat('PR:',@municlass,':', @revisionyear, ':', replace(t.plant_desc, ' ', ''), ':', tu.class_level_code) as objid,
+  concat('PR:',@municlass,':', @revisionyear) as planttreerysettingid,
   t.plant_desc as planttree_objid,
   concat(tu.plant_code, '-', substr(tu.class_level_code, 1,1)) as code,
   concat(tu.class_level_code, ' CLASS') as name,
@@ -95,11 +107,11 @@ where tu.plant_code = t.plant_code
 
 
 alter table rptis_talibon.m_plants_trees 
-	add objid varchar(50)
+	add xobjid varchar(50)
 ;
 
 update rptis_talibon.m_plants_trees tu, rptis_talibon.m_plants_trees_entry t set 
-  tu.objid = concat('PR:',@municipalcode,':', @revisionyear, ':', tu.plant_code, ':', tu.class_level_code)
+  tu.xobjid = concat('PR:',@municlass,':', @revisionyear, ':', replace(t.plant_desc, ' ', ''), ':', tu.class_level_code) 
 where tu.plant_code = t.plant_code 
 ;
 
@@ -122,5 +134,6 @@ select
   (select name from training_etracs255.municipality) as lguname
 from training_etracs255.planttreerysetting
 ;
+
 
 
