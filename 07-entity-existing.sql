@@ -30,7 +30,7 @@ set @revisionyear = 2016;
 set @municipalcode = 42;
 set @municlass = '1ST';
 
-insert into training_etracs255.entity (
+insert ignore into training_etracs255.entity (
   objid,
   entityno,
   name,
@@ -63,7 +63,7 @@ from rptis.m_owner
 where owner_desc is not null
 ;
 
-insert into training_etracs255.entity_address (
+insert ignore into training_etracs255.entity_address (
   objid,
   parentid,
   type,
@@ -106,7 +106,7 @@ where owner_desc is not null
 update training_etracs255.entity set address_objid = objid
 ;
 
-insert into training_etracs255.entityindividual (
+insert ignore into training_etracs255.entityindividual (
   objid,
   lastname,
   firstname,
@@ -133,7 +133,7 @@ alter table training_etracs255.entityindividual
 	modify column firstname varchar(1600)
 ;
 
-insert into training_etracs255.entityindividual (
+insert ignore into training_etracs255.entityindividual (
   objid,
   lastname,
   firstname,
@@ -157,7 +157,7 @@ where owner_desc is not null
 and owner_type = 'I'
 ;
 
-insert into training_etracs255.entityjuridical (
+insert ignore into training_etracs255.entityjuridical (
   objid
 )
 select 
@@ -167,7 +167,7 @@ where owner_desc is not null
 and owner_type = 'C'
 ;
 
-insert into training_etracs255.entitymultiple(
+insert ignore into training_etracs255.entitymultiple(
   objid,
   fullname
 )
