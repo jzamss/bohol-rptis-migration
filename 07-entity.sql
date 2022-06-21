@@ -57,7 +57,7 @@ select
   xobjid as objid,
   xobjid as entityno,
   owner_desc as name,
-  owner_adderss as address_text,
+  ifnull(owner_adderss, '-') as address_text,
   case 
 		when owner_type = 'I' then 'INDIVIDUAL' 
 		when owner_type = 'C' then 'JURIDICAL' 
@@ -107,7 +107,7 @@ select
   null as street,
   null as subdivision,
   null as pin,
-  owner_adderss as text
+  ifnull(owner_adderss,'-)' as text
 from rptis.m_owner 
 where owner_desc is not null 
 ;
