@@ -14,7 +14,7 @@ IMPORTANT !!!
 
 ======================================================================*/
 
-insert into training_etracs255.faas_signatory (
+insert ignore into training_etracs255.faas_signatory (
   objid,
   appraiser_name ,
   appraiser_title,
@@ -46,7 +46,7 @@ and p.trans_stamp = @transid
 
 
 /* PREVIOUS INFORMATION */
-insert into training_etracs255.faas_previous (
+insert ignore into training_etracs255.faas_previous (
   objid,
   faasid,
   prevfaasid,
