@@ -57,7 +57,7 @@ insert ignore into training_etracs255.realproperty (
  )
 select 
   p.xrpid as  objid,
-  case when p.pin_status = 'A' then 'CURRENT' else 'CANCELLED' end as state,
+  case when p.pin_status = 'C' then 'CURRENT' else 'CANCELLED' end as state,
   0 as autonumber,
   'new' as pintype,
   p.pin_no as pin,
@@ -181,7 +181,7 @@ insert ignore into training_etracs255.rpu (
 )
 select 
   p.trans_stamp as objid,
-  case when p.pin_status = 'A' then 'CURRENT' else 'CANCELLED' end as state,
+  case when p.pin_status = 'C' then 'CURRENT' else 'CANCELLED' end as state,
   p.xrpid as realpropertyid,
   case 
 		when p.prop_type_code = 'L' then 'land' 
@@ -299,7 +299,7 @@ insert ignore into training_etracs255.faas (
 )
 select distinct
   a.trans_stamp as objid,
-  case when p.pin_status = 'A' then 'CURRENT' else 'CANCELLED' end as state,
+  case when p.pin_status = 'C' then 'CURRENT' else 'CANCELLED' end as state,
   a.trans_stamp as rpuid,
   1 as datacapture,
   0 as autonumber,
