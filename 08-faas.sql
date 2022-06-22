@@ -32,7 +32,7 @@ where prop_type_code = 'L'
 alter table training_etracs255.realproperty modify column surveyno varchar(500)
 ;
 
-insert into training_etracs255.realproperty (
+insert ignore into training_etracs255.realproperty (
   objid,
   state,
   autonumber,
@@ -375,7 +375,7 @@ and b.municipal_code = p.municipal_code
 ;
 
 
-insert into training_etracs255.faas_list(
+insert ignore into training_etracs255.faas_list(
 	objid,
 	state,
 	datacapture,
