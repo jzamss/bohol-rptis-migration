@@ -178,7 +178,7 @@ select
 	ld.landrpuid,
 	al.classification_objid,
 	sum(ld.areasqm) as areasqm
-from training_etracs255.landdetail ld, landassesslevel al 
+from training_etracs255.landdetail ld, training_etracs255.landassesslevel al 
 where ld.actualuse_objid = al.objid 
 and al.classification_objid is not null 
 group by landrpuid, al.classification_objid
