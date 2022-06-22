@@ -14,7 +14,7 @@ IMPORTANT !!!
 
 ======================================================================*/
 
-insert into training_etracs255.landdetail (
+insert into training_etracs255.faas_signatory (
   objid,
   appraiser_name ,
   appraiser_title,
@@ -38,8 +38,8 @@ select
   '' as approver_title ,
   s.approved_date as approver_dtsigned
 from 
-	rptis_talibon.h_property_info p,
-	rptis_talibon.c_faas_summary s
+	rptis.h_property_info p,
+	rptis.c_faas_summary s
 where p.trans_stamp = s.trans_stamp
 and p.trans_stamp = @transid
 ;
@@ -78,8 +78,8 @@ select
   null as preveffectivity,
   null as prevtaxability
 from 
-	rptis_talibon.h_property_info p,
-	rptis_talibon.c_faas_summary s
+	rptis.h_property_info p,
+	rptis.c_faas_summary s
 where p.trans_stamp = s.trans_stamp
 ;
 
