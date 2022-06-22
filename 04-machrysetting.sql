@@ -78,9 +78,8 @@ and a.prop_type_code = 'M'
 and municipal_code = @municipalcode
 ;
 
-
 update rptis.m_assessment_levels a, rptis.m_classification c set 
-  a.objid = concat('MRA:',@municlass,':', @revisionyear, ':', a.class_code)
+  a.xobjid = concat('MRA:',@municlass,':', @revisionyear, ':', a.class_code)
 where a.class_code = c.class_code
 and a.prop_type_code = 'M'
 and municipal_code = @municipalcode
