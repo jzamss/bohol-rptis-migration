@@ -105,15 +105,15 @@ select
   (select objid from training_etracs255.landassesslevel where objid = al.xobjid) as actualuse_objid,
   null as stripping_objid,
   0 as striprate,
-  case when a.class_group = 'A' then 'HA' else 'SQM' end areatype,
+	case when a.class_group = 'A' then 'HA' else 'SQM' end areatype,
   null as addlinfo,
   case when a.class_group = 'A' then a.area else a.area * 10000 end as area,
-  a.area * 10000 as areasqm,
+	a.area * 10000 as areasqm,
   a.area as areaha,
-  a.unit_value / 10000 as basevalue,
-  a.unit_value / 10000 as unitvalue,
+  case when a.class_group = 'A' then a.unit_value else a.unit_value / 10000 end as basevalue,
+  case when a.class_group = 'A' then a.unit_value else a.unit_value / 10000 end as unitvalue,
   case when a.taxability_type = 'T' then 1 else 0 end taxable,
-  case when a.class_group = 'A' then a.area else a.area * 10000 end * a.unit_value / 10000 as basemarketvalue,
+  a.area * a.unit_value as basemarketvalue,
   0 as adjustment,
   0 as landvalueadjustment,
   0 as actualuseadjustment,
@@ -122,11 +122,11 @@ select
   0 as assessedvalue,
   c.xobjid as landspecificclass_objid
 from 
-	rptis.h_property_info p,
-	rptis.d_land_appraisal a, 
-	rptis.m_assessment_levels al,
-	rptis.m_classification c,
-	rptis.m_unit_value uv
+	rptis_talibon.h_property_info p,
+	rptis_talibon.d_land_appraisal a, 
+	rptis_talibon.m_assessment_levels al,
+	rptis_talibon.m_classification c,
+	rptis_talibon.m_unit_value uv
 where p.trans_stamp = a.trans_stamp
 and a.actual_use = al.class_code
 and p.prop_type_code = al.prop_type_code
@@ -137,4 +137,93 @@ and a.class_level_code = uv.class_level_code
 ;
 
 
-/* TODO: WHY UNIT VALUE IS LARGE */
+/* UPDATE RPU TOTAL BMV */
+
+drop table if exists rptis_talibon.zztmp_rpu_totals
+;
+
+
+create table rptis_talibon.zztmp_rpu_totals
+as 
+select 
+	landrpuid,
+	sum(basemarketvalue) as totalbmv
+from training_etracs255.landdetail 
+group by landrpuid
+;
+
+
+update training_etracs255.rpu r, rptis_talibon.zztmp_rpu_totals z set 
+	r.totalbmv = z.totalbmv
+where r.objid = z.landrpuid
+;
+
+update training_etracs255.landrpu r, rptis_talibon.zztmp_rpu_totals z set 
+	r.totallandbmv = z.totalbmv
+where r.objid = z.landrpuid
+;
+
+
+
+/* UPDATE RPU CLASSIFICATION BASED ON DOMINANT AREA*/
+
+drop table if exists rptis_talibon.zztmp_rpu_totalarea_byclass
+;
+
+
+create table rptis_talibon.zztmp_rpu_totalarea_byclass
+as 
+select 
+	ld.landrpuid,
+	al.classification_objid,
+	sum(ld.areasqm) as areasqm
+from training_etracs255.landdetail ld, landassesslevel al 
+where ld.actualuse_objid = al.objid 
+and al.classification_objid is not null 
+group by landrpuid, al.classification_objid
+;
+
+create index ix_rpuid on rptis_talibon.zztmp_rpu_totalarea_byclass(landrpuid)
+;
+
+drop table if exists rptis_talibon.zztmp_rpu_dominant_area
+;
+
+create table rptis_talibon.zztmp_rpu_dominant_area
+as 
+select 
+	landrpuid,
+	sum(areasqm) as maxarea
+from rptis_talibon.zztmp_rpu_totalarea_byclass
+group by landrpuid
+;
+
+
+create index ix_rpuid on rptis_talibon.zztmp_rpu_dominant_area(landrpuid)
+;
+
+/* UPDATE CLASSIFICATION BASE ON DOMINANT AREA*/
+update 
+	training_etracs255.rpu r,  
+	rptis_talibon.zztmp_rpu_totalarea_byclass c,
+	rptis_talibon.zztmp_rpu_dominant_area a
+set 
+	r.classification_objid = c.classification_objid 
+where r.objid = c.landrpuid 
+and r.objid = a.landrpuid 
+and c.areasqm = a.maxarea
+;
+
+
+update training_etracs255.faas_list fl, training_etracs255.rpu r set 
+	fl.classification_objid = r.classification_objid
+where fl.rpuid = r.objid
+;
+
+
+update training_etracs255.faas_list fl, training_etracs255.rpu r set 
+	fl.classification_objid = r.classification_objid,
+	fl.classcode = r.classification_objid
+where fl.rpuid = r.objid
+;
+
