@@ -158,7 +158,7 @@ select
   concat(repeat('0',4 - LENGTH(brgy_code)), brgy_code) as indexno,
   concat('047-',municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code) as pin,
   brgy_desc,
-  concat('047',municipal_code) as parentid
+  concat('047-',municipal_code) as parentid
 from rptis.m_barangay
 where municipal_code = @municipalcode
 ;
