@@ -113,7 +113,7 @@ select
   a.unit_value / 10000 as basevalue,
   a.unit_value / 10000 as unitvalue,
   case when a.taxability_type = 'T' then 1 else 0 end taxable,
-  a.area * a.unit_value / 10000 as basemarketvalue,
+  case when a.class_group = 'A' then a.area else a.area * 10000 end * a.unit_value / 10000 as basemarketvalue,
   0 as adjustment,
   0 as landvalueadjustment,
   0 as actualuseadjustment,
