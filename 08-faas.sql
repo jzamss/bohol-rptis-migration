@@ -146,7 +146,7 @@ alter table rptis.h_property_info
 ;
 
 update rptis.h_property_info  set 
-	suffix = right(pin_no, 4)
+	suffix = right(replace(replace(trim(pin_no),'(', ''), ')', ''), 4)
 where prop_type_code <> 'L'
 ;
 
