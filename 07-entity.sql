@@ -103,7 +103,7 @@ select
   null as street,
   null as subdivision,
   null as pin,
-  ifnull(owner_adderss,'-)' as text
+  ifnull(owner_adderss,'-') as text
 from rptis.m_owner 
 where owner_desc is not null 
 ;
