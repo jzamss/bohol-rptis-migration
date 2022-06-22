@@ -49,8 +49,8 @@ select distinct
   null as distanceawr,
   null as distanceltc
 from 
-	rptis_talibon.p_ar a, 
-	rptis_talibon.h_property_info p
+	rptis.p_ar a, 
+	rptis.h_property_info p
 where p.trans_stamp = a.trans_stamp
 ;
 
@@ -58,14 +58,14 @@ where p.trans_stamp = a.trans_stamp
 
 /* LAND DETAIL */
 
-alter table rptis_talibon.d_land_appraisal 
+alter table rptis.d_land_appraisal 
 	add xoid varchar(50)
 ;
 
-create unique index ux_oid on rptis_talibon.d_land_appraisal (xoid)
+create unique index ux_oid on rptis.d_land_appraisal (xoid)
 ;
 
-update rptis_talibon.d_land_appraisal set xoid = md5(concat(rand(),line_no))
+update rptis.d_land_appraisal set xoid = md5(concat(rand(),line_no))
 ;
 
 
@@ -110,10 +110,10 @@ select
   case when a.class_group = 'A' then a.area else a.area * 10000 end as area,
   a.area * 10000 as areasqm,
   a.area as areaha,
-  a.unit_value as basevalue,
-  a.unit_value as unitvalue,
+  a.unit_value / 10000 as basevalue,
+  a.unit_value / 10000 as unitvalue,
   case when a.taxability_type = 'T' then 1 else 0 end taxable,
-  a.market_value as basemarketvalue,
+  a.area * a.unit_value / 10000 as basemarketvalue,
   0 as adjustment,
   0 as landvalueadjustment,
   0 as actualuseadjustment,
@@ -122,11 +122,11 @@ select
   0 as assessedvalue,
   c.xobjid as landspecificclass_objid
 from 
-	rptis_talibon.h_property_info p,
-	rptis_talibon.d_land_appraisal a, 
-	rptis_talibon.m_assessment_levels al,
-	rptis_talibon.m_classification c,
-	rptis_talibon.m_unit_value uv
+	rptis.h_property_info p,
+	rptis.d_land_appraisal a, 
+	rptis.m_assessment_levels al,
+	rptis.m_classification c,
+	rptis.m_unit_value uv
 where p.trans_stamp = a.trans_stamp
 and a.actual_use = al.class_code
 and p.prop_type_code = al.prop_type_code
