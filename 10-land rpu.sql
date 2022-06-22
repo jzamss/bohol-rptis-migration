@@ -120,7 +120,7 @@ select
   a.market_value as marketvalue,
   0 as assesslevel,
   0 as assessedvalue,
-  c.xobjid as landspecificclass_objid
+  c.class_code as landspecificclass_objid
 from 
 	rptis.h_property_info p,
 	rptis.d_land_appraisal a, 
