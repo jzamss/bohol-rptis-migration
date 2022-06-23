@@ -12,7 +12,7 @@ update rptis_talibon.m_building_components set
 	xobjid = replace(bldg_components_desc, ' ', '')
 ;
 
-insert into training_etracs255.structure (
+insert ignore into training_etracs255.structure (
   objid,
   state,
   code,
@@ -33,7 +33,9 @@ select
 		else 0
 	end as showinfaas
 from rptis_talibon.m_building_components 
+where length(trim(bldg_components_desc)) > 0
 ;
+
 
 /* ADD xoid */
 alter table rptis_talibon.d_bldg_floor 
@@ -43,7 +45,11 @@ alter table rptis_talibon.d_bldg_floor
 create unique index ux_oid on rptis_talibon.d_bldg_floor (xoid)
 ;
 
-update rptis_talibon.d_bldg_floor set xoid = md5(concat(rand(),bldg_components_code))
+update rptis_talibon.d_bldg_floor set xoid = null
+;
+
+update rptis_talibon.d_bldg_floor set 
+  xoid = md5(concat(rand(),trans_stamp,trans_datetime))
 ;
 
 
