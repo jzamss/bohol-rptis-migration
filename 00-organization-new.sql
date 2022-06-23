@@ -92,15 +92,15 @@ insert into sys_org (
   txncode
 )
 select
-  concat('047-',municipal_code,'-',repeat('0',4 - LENGTH(brgy_code)), brgy_code) as objid,
+  concat('047-',repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code,'-',repeat('0',4 - LENGTH(brgy_code)), brgy_code) as objid,
   brgy_desc as name,
   'BARANGAY' as orgclass,
-  concat('047-',municipal_code) as parent_objid,
+  concat('047-',repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code) as parent_objid,
   'MUNICIPALITY' as parent_orgclass,
-  concat('047-',municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code) as code,
+  concat('047-',repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code) as code,
   0 as root,
-  concat('047',municipal_code,repeat('0',4 - LENGTH(brgy_code)), brgy_code) as txncode
-from rptis.m_barangay  
+  concat('047',repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code,repeat('0',4 - LENGTH(brgy_code)), brgy_code) as txncode
+from rptis.m_barangay b
 where municipal_code = @municipalcode
 ;
 
@@ -153,13 +153,13 @@ insert into barangay (
   parentid
 )
 select 
-  concat('047-',municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code),
+  concat('047-',repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code),
   'DRAFT' as state,
   concat(repeat('0',4 - LENGTH(brgy_code)), brgy_code) as indexno,
-  concat('047-',municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code) as pin,
+  concat('047-',repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code) as pin,
   brgy_desc,
-  concat('047-',municipal_code) as parentid
-from rptis.m_barangay
+  concat('047-',repeat('0', 2 - LENGTH(b.municipal_code)), b.municipal_code) as parentid
+from rptis.m_barangay b
 where municipal_code = @municipalcode
 ;
 
@@ -171,7 +171,7 @@ alter table rptis.m_barangay
 
 update rptis.m_barangay set 
 	lguid = concat('047-', repeat('0', 2 - LENGTH(municipal_code)), municipal_code ),
-	brgyid = concat('047-',municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code)
+	brgyid = concat('047-',repeat('0', 2 - LENGTH(municipal_code)), municipal_code,'-', repeat('0',4 - LENGTH(brgy_code)), brgy_code)
 ;
 
 
