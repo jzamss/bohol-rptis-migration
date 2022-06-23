@@ -31,8 +31,8 @@ select
       else null
     end  as dtcompleted,
   case 
-    when b.dtoccupied <= year(now()) and b.dtoccupied >= 1800
-      then concat(b.dtoccupied, '-01-01') 
+    when b.date_occupied <= year(now()) and b.date_occupied >= 1800
+      then concat(b.date_occupied, '-01-01') 
       else null
     end as dtoccupied,
   ifnull(b.no_of_storeys,1) as floorcount,
@@ -45,8 +45,8 @@ select
   null as bldgclass,
   ifnull(b.bldg_age,0) as effectiveage,
   case 
-    when b.dtconstructed <= year(now()) and b.dtconstructed >= 1800
-      then concat(b.dtconstructed, '-01-01') 
+    when b.date_constructed <= year(now()) and b.date_constructed >= 1800
+      then concat(b.date_constructed, '-01-01') 
       else null
     end as dtconstructed,
   null as occpermitno,
