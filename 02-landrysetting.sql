@@ -145,7 +145,7 @@ insert ignore into training_etracs255.lcuvsubclass(
   previd
 )
 select
-  concat('LRSUB:',@municlass,':', @revisionyear, ':', c.sub_class_code, ':', v.class_level_code) as objid,
+  concat('LRSUB:',@municlass,':', @revisionyear, ':', ifnull(c.sub_class_code, c.class_code), ':', v.class_level_code) as objid,
 	concat('LRSPC:',@municlass,':', @revisionyear, ':', c.class_code) as specificclass_objid,
   concat('LR:',@municlass,':', @revisionyear) as landrysettingid,
   concat(c.sub_class_code, substring(v.class_level_code, 1,1)) as code,
@@ -165,7 +165,7 @@ update
 	rptis.m_classification c,
 	rptis.m_unit_value v 
 set 
-  v.xobjid = concat('LRSUB:',@municlass,':', @revisionyear, ':', c.sub_class_code, ':', v.class_level_code),
+  v.xobjid = concat('LRSUB:',@municlass,':', @revisionyear, ':', ifnull(c.sub_class_code, c.class_code), ':', v.class_level_code),
 	v.xspcid = concat('LRSPC:',@municlass,':', @revisionyear, ':', c.class_code)
 where c.class_code = v.class_code
 ;
