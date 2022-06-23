@@ -5,7 +5,7 @@
 *    1. REPLACE ALL instances of "training_etracs255" with 
 *       the actual ETRACS db name
 *    2. REPLACE ALL instances of "rptis." with the actual RPTIS Database
-*       Name such as "rptis_talibon."
+*       Name such as "rptis."
 *    3. Execute ALL script by pressing CTRL + R
 ======================================================================*/
 
@@ -145,20 +145,39 @@ where bldg_matls_desc in(
 ;  
 
 
-insert ignore into training_etracs255.structure(
+
+
+alter table rptis.m_building_components 
+	add xobjid varchar(50)
+;
+
+update rptis.m_building_components set 
+	xobjid = replace(bldg_components_desc, ' ', '')
+;
+
+
+insert into training_etracs255.structure (
   objid,
   state,
   code,
-  name
+  name,
+  indexno,
+  showinfaas
 )
-select
-  bldg_components_desc as objid,
+select 
+  xobjid as objid,
   'APPROVED' as state,
-  bldg_components_code code,
-  bldg_components_desc as name
-from rptis.m_building_components
-;  
-
+  substring(bldg_components_desc, 1, 8) as code,
+  bldg_components_desc as name,
+  ifnull(order_no,100) as indexno,
+  case 
+		when bldg_components_desc = 'ROOF' then 1 
+		when bldg_components_desc = 'FLOORING' then 1 
+		when bldg_components_desc = 'WALL' then 1 
+		else 0
+	end as showinfaas
+from rptis.m_building_components 
+;
 
 insert ignore into training_etracs255.machine(
   objid,
