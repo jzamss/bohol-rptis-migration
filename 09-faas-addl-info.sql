@@ -41,7 +41,6 @@ from
 	rptis.h_property_info p,
 	rptis.c_faas_summary s
 where p.trans_stamp = s.trans_stamp
-and p.trans_stamp = @transid
 ;
 
 
