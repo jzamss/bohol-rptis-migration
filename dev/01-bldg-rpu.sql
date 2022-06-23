@@ -25,8 +25,16 @@ select
   b.bldg_permit as permitno,
   null as permitdate,
   0 as basevalue,
-  concat(b.date_completed, '-01-01') as dtcompleted,
-  concat(b.date_occupied, '-01-01') as dtoccupied,
+  case 
+    when b.date_completed <= year(now()) and b.date_completed >= 1800
+      then concat(b.date_completed, '-01-01') 
+      else null
+    end  as dtcompleted,
+  case 
+    when b.dtoccupied <= year(now()) and b.dtoccupied >= 1800
+      then concat(b.dtoccupied, '-01-01') 
+      else null
+    end as dtoccupied,
   ifnull(b.no_of_storeys,1) as floorcount,
   0 as depreciation,
   0 as depreciationvalue,
@@ -36,7 +44,11 @@ select
   0 as assesslevel,
   null as bldgclass,
   ifnull(b.bldg_age,0) as effectiveage,
-  concat(b.date_constructed, '-01-01') as dtconstructed,
+  case 
+    when b.dtconstructed <= year(now()) and b.dtconstructed >= 1800
+      then concat(b.dtconstructed, '-01-01') 
+      else null
+    end as dtconstructed,
   null as occpermitno,
 	0 as condominium
 from 

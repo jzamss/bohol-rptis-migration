@@ -11,3 +11,10 @@ select right(replace(replace(trim(@pin_no),'(', ''), ')', ''), 4);
 
 /* check invalid section */
 select section from h_property_info order by section desc limit 5;
+
+/* INVALID BLDG DATE */
+select  date_completed 
+from h_bldg_gen_info 
+where date_completed > year(now())
+and date_completed < 1902
+
