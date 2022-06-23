@@ -148,7 +148,7 @@ select
   concat('LRSUB:',@municlass,':', @revisionyear, ':', ifnull(c.sub_class_code, c.class_code), ':', v.class_level_code) as objid,
 	concat('LRSPC:',@municlass,':', @revisionyear, ':', c.class_code) as specificclass_objid,
   concat('LR:',@municlass,':', @revisionyear) as landrysettingid,
-  concat(c.sub_class_code, substring(v.class_level_code, 1,1)) as code,
+  concat(ifnull(c.sub_class_code, c.class_code), substring(v.class_level_code, 1,1)) as code,
   concat(v.class_level_code, ' CLASS') as name,
   v.class_level_amt as unitvalue,
   null as previd

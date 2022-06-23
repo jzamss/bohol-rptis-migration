@@ -100,8 +100,8 @@ insert into training_etracs255.landdetail (
 select 
   a.xoid as objid,
   p.trans_stamp landrpuid,
-  uv.xobjid as subclass_objid,
-  uv.xspcid as specificclass_objid,
+  (select objid from training_etracs255.lcuvsubclass where objid = uv.xobjid) as subclass_objid,
+  (select objid from training_etracs255.lcuvspecificclass where objid = uv.xspcid) as specificclass_objid,
   (select objid from training_etracs255.landassesslevel where objid = al.xobjid) as actualuse_objid,
   null as stripping_objid,
   0 as striprate,
