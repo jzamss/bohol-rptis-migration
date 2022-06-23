@@ -309,7 +309,7 @@ select distinct
   year(s.effectivity) as effectivityyear,
   1 as effectivityqtr,
   null as titletype,
-  p.tct_no as titleno,
+  p.title_reference as titleno,
   null as titledate,
   mo.xobjid as taxpayer_objid,
   a.owner_name,
