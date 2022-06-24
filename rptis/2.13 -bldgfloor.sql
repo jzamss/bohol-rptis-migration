@@ -1,4 +1,13 @@
 /* BLDG FLOOR INFORMATION */
+
+/*======================================================
+NOTE:
+  * objid - primary key
+  * bldguseid - links to bldguse.objd, set to ''
+  * bldgrpuid - links to trans_stamp
+  * storeyrate - storey adjustment rate
+======================================================*/
+
 create view etracs_bldgfloor 
 as
 select
