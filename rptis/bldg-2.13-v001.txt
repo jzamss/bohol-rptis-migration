@@ -8,7 +8,10 @@ NOTE:
   * storeyrate - storey adjustment rate
 ======================================================*/
 
-create view etracs_bldgfloor 
+drop view if exists  rptis.etracs_bldgfloor 
+;
+
+create view rptis.etracs_bldgfloor 
 as
 select 
 	concat('BF', md5(concat(rand(),d.trans_stamp, d.xoid, d.floor_no))) AS objid,
@@ -31,3 +34,33 @@ INNER JOIN m_addtnl_every_floor_bldg ff ON d.struc_code = ff.struc_code
 	AND d.bldg_class_code=ff.bldg_class_code
 GROUP BY a.trans_stamp, d.xoid, d.floor_no
 ;
+
+
+
+insert into training_etracs255.bldgfloor (
+  objid,
+  bldguseid,
+  bldgrpuid,
+  floorno,
+  area,
+  storeyrate,
+  basevalue,
+  unitvalue,
+  basemarketvalue,
+  adjustment,
+  marketvalue
+)
+select 
+  objid,
+  bldguseid,
+  bldgrpuid,
+  floorno,
+  area,
+  storeyrate,
+  unitvalue as basevalue,
+  unitvalue,
+  basemarketvalue,
+  adjustment,
+  marketvalue
+from rptis.etracs_bldgfloor
+;  

@@ -1,13 +1,3 @@
-/* BLDG DEPRECIATION */
-/*======================================================
-NOTE:
-  * objid - primary key
-  * bldgrpuid - links to trans_stamp
-  * basemarketvalue - basis for depreciation
-  * deprate - deprecation rate
-  * depreciation - computed depreciation
-======================================================*/
-
 create view etracs_bldgfloor_depreciation
 as
 select
