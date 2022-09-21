@@ -1,0 +1,25 @@
+ORGANIZATION
+==============================
+
+1. Add lguid and brgyid field to rptis.m_barangay.
+
+  For LGU's not implemenenting RPTIS module, 
+  execute "00-organization-new.sql"
+
+  otherwise:
+
+  execute "00-organization-existing.sql"
+
+  In case of error, post to GC.
+
+
+2. Login to ETRACS. Open Administration - Organization.
+   Verify that Province, Municipality and Barangay are 
+   correctly populated 
+
+3. Mark Monitoring as "OK"
+
+
+NOTE FOR PROVINCE: 
+* Verify that municipalities and barangays are properly merge
+
