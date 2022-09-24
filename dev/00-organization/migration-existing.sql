@@ -2,6 +2,8 @@
 * FOR EXISTING INSTALLATION
 =======================================================*/
 -- RPTIS DATABASE
+
+/* add etracs target reference fields */
 alter table rptis.m_barangay 
 	add lguid varchar(50),
 	add brgyid varchar(50)
